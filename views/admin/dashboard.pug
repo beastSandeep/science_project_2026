@@ -124,6 +124,16 @@ html(lang="en")
                 line(x1="10" y1="14" x2="21" y2="3")
               span(class="hidden sm:inline") Public Site
 
+            button(
+              @click="openPasswordModal()"
+              class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-600 text-xs text-slate-200 hover:text-white transition flex items-center space-x-1.5"
+              title="Change Master Admin Password"
+            )
+              svg(class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                rect(width="18" height="11" x="3" y="11" rx="2" ry="2")
+                path(d="M7 11V7a5 5 0 0 1 10 0v4")
+              span(class="hidden sm:inline") Change Password
+
             a(
               href="/admin/logout"
               class="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-xs text-rose-300 transition flex items-center space-x-1"
@@ -779,6 +789,94 @@ html(lang="en")
                   template(x-if="!isSaving")
                     span Create &amp; Publish Project
 
+      //- Change Password Modal
+      div(
+        x-show="isPasswordModalOpen"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md"
+        @keydown.escape.window="closePasswordModal()"
+      )
+        div(
+          x-show="isPasswordModalOpen"
+          @click.outside="closePasswordModal()"
+          class="glass-panel rounded-2xl w-full max-w-md overflow-hidden border border-slate-700 shadow-2xl flex flex-col"
+        )
+          div(class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between")
+            div(class="flex items-center space-x-2.5")
+              div(class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400")
+                svg(class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                  rect(width="18" height="11" x="3" y="11" rx="2" ry="2")
+                  path(d="M7 11V7a5 5 0 0 1 10 0v4")
+              div
+                h3(class="text-sm font-bold text-white") Change Master Password
+                p(class="text-[11px] text-slate-400") Update admin console access credentials
+            button(
+              @click="closePasswordModal()"
+              class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"
+            ) &times;
+
+          form(@submit.prevent="submitPasswordChange()" class="p-5 space-y-4 text-xs")
+            template(x-if="passwordError")
+              div(class="p-3 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-300 flex items-center space-x-2")
+                span(class="font-bold") ⚠️
+                span(x-text="passwordError")
+
+            div(class="space-y-1.5")
+              label(class="block font-mono text-[11px] uppercase text-slate-300 font-semibold") Current Password
+              input(
+                type="password"
+                x-model="passwordForm.currentPassword"
+                required
+                autocomplete="current-password"
+                placeholder="Enter current password"
+                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+              )
+
+            div(class="space-y-1.5")
+              label(class="block font-mono text-[11px] uppercase text-slate-300 font-semibold") New Password
+              input(
+                type="password"
+                x-model="passwordForm.newPassword"
+                required
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="Enter new password (min. 6 characters)"
+                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+              )
+
+            div(class="space-y-1.5")
+              label(class="block font-mono text-[11px] uppercase text-slate-300 font-semibold") Confirm New Password
+              input(
+                type="password"
+                x-model="passwordForm.confirmPassword"
+                required
+                minlength="6"
+                autocomplete="new-password"
+                placeholder="Confirm new password"
+                class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+              )
+
+            div(class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-2")
+              button(
+                type="button"
+                @click="closePasswordModal()"
+                class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition"
+              ) Cancel
+              button(
+                type="submit"
+                :disabled="isPasswordSaving"
+                class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold transition flex items-center space-x-1.5 shadow-lg shadow-amber-500/20"
+              )
+                template(x-if="isPasswordSaving")
+                  span Updating...
+                template(x-if="!isPasswordSaving")
+                  span Update Password
+
     //- Embedded Alpine Store
     script.
       const initialModels = !{JSON.stringify(models)};
@@ -794,6 +892,14 @@ html(lang="en")
           editingModel: null,
           isAddingProject: false,
           isSaving: false,
+          isPasswordModalOpen: false,
+          isPasswordSaving: false,
+          passwordError: '',
+          passwordForm: {
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          },
           toastMessage: '',
           categories: ['All', 'Physics', 'Mechanics', 'Electricity', 'Optics', 'Biology', 'Chemistry', 'Earth & Space'],
           statusOptions: ['All', 'Available', 'In Progress', 'Completed', 'Exhibited'],
@@ -1094,6 +1200,48 @@ html(lang="en")
               this.showToast(`Removed Model #${id} from the fair`);
             } catch (err) {
               alert('Error deleting project: ' + err.message);
+            }
+          },
+
+          openPasswordModal() {
+            this.passwordError = '';
+            this.passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+            this.isPasswordModalOpen = true;
+          },
+
+          closePasswordModal() {
+            this.isPasswordModalOpen = false;
+            this.passwordError = '';
+          },
+
+          async submitPasswordChange() {
+            if (this.passwordForm.newPassword !== this.passwordForm.confirmPassword) {
+              this.passwordError = 'New passwords do not match.';
+              return;
+            }
+            if (this.passwordForm.newPassword.length < 6) {
+              this.passwordError = 'New password must be at least 6 characters long.';
+              return;
+            }
+            this.isPasswordSaving = true;
+            this.passwordError = '';
+            try {
+              const res = await fetch('/admin/api/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(this.passwordForm)
+              });
+              const data = await res.json();
+              if (!res.ok || !data.success) {
+                this.passwordError = data.error || 'Failed to update password.';
+              } else {
+                this.showToast('Master password successfully updated!');
+                this.closePasswordModal();
+              }
+            } catch (err) {
+              this.passwordError = 'Network error while updating password.';
+            } finally {
+              this.isPasswordSaving = false;
             }
           },
 

@@ -11,12 +11,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
 
-// Admin credentials as requested
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'Sandeep80055';
-const AUTH_SECRET = 'science-fair-2026-sandeep-secret-key';
-const EXPECTED_TOKEN = crypto.createHmac('sha256', AUTH_SECRET).update(`${ADMIN_USER}:${ADMIN_PASS}`).digest('hex');
-
 const isDev = process.env.NODE_ENV === 'development' || 
               process.argv.includes('--dev') || 
               process.execArgv.includes('--watch');
@@ -85,18 +79,30 @@ app.get('/favicon.ico', (req, res) => {
 
 // Admin authentication middleware
 function requireAdminAuth(req, res, next) {
+  // 1. Direct to setup wizard if master password is not yet configured on this deployment
+  if (!dataManager.isAdminConfigured()) {
+    if (req.path.startsWith('/admin/api/')) {
+      return res.status(401).json({ success: false, setupRequired: true, error: 'Initial administrator setup required. Please visit /admin/setup.' });
+    }
+    return res.redirect('/admin/setup');
+  }
+
+  // 2. Cookie session check
   const token = req.cookies.admin_session;
-  if (token && token === EXPECTED_TOKEN) {
+  const expectedToken = dataManager.getAdminSessionToken();
+  if (token && expectedToken && token === expectedToken) {
     return next();
   }
-  // Also support Basic Auth (convenient for API calls and automated tools)
+
+  // 3. Support Basic Auth (convenient for API calls and automated tests)
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Basic ')) {
     const creds = Buffer.from(authHeader.split(' ')[1], 'base64').toString('utf8').split(':');
-    if (creds[0] === ADMIN_USER && creds[1] === ADMIN_PASS) {
+    if (creds[0] === dataManager.getAdminUsername() && dataManager.verifyAdminPassword(creds[1])) {
       return next();
     }
   }
+
   if (req.path.startsWith('/admin/api/')) {
     return res.status(401).json({ success: false, error: 'Unauthorized: Admin session or credentials required.' });
   }
@@ -165,9 +171,50 @@ app.get('/api/ratings/:id', (req, res) => {
 // ADMIN ROUTES (/admin)
 // -------------------------------------------------------------
 
+// First-time setup page (Only available if master password is not yet set)
+app.get('/admin/setup', (req, res) => {
+  if (dataManager.isAdminConfigured()) {
+    return res.redirect('/admin/login');
+  }
+  res.render('admin/setup', { error: null });
+});
+
+// Process first-time setup
+app.post('/admin/setup', (req, res) => {
+  if (dataManager.isAdminConfigured()) {
+    return res.redirect('/admin/login');
+  }
+  const { username, password, confirmPassword } = req.body;
+  if (!password || password.trim().length < 6) {
+    return res.render('admin/setup', { error: 'Master password must be at least 6 characters long.' });
+  }
+  if (password !== confirmPassword) {
+    return res.render('admin/setup', { error: 'Passwords do not match. Please re-enter.' });
+  }
+
+  const result = dataManager.setAdminPassword(password, username);
+  if (!result.success) {
+    return res.render('admin/setup', { error: result.error || 'Failed to configure password.' });
+  }
+
+  // Establish initial admin session
+  const token = dataManager.getAdminSessionToken();
+  res.cookie('admin_session', token, {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: 'lax'
+  });
+  return res.redirect('/admin');
+});
+
 // Admin login page
 app.get('/admin/login', (req, res) => {
-  if (req.cookies.admin_session === EXPECTED_TOKEN) {
+  if (!dataManager.isAdminConfigured()) {
+    return res.redirect('/admin/setup');
+  }
+  const token = req.cookies.admin_session;
+  const expectedToken = dataManager.getAdminSessionToken();
+  if (token && expectedToken && token === expectedToken) {
     return res.redirect('/admin');
   }
   res.render('admin/login', { error: null });
@@ -175,9 +222,14 @@ app.get('/admin/login', (req, res) => {
 
 // Process admin login
 app.post('/admin/login', (req, res) => {
+  if (!dataManager.isAdminConfigured()) {
+    return res.redirect('/admin/setup');
+  }
   const { username, password } = req.body;
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    res.cookie('admin_session', EXPECTED_TOKEN, {
+  const expectedUser = dataManager.getAdminUsername();
+  if (username === expectedUser && dataManager.verifyAdminPassword(password)) {
+    const token = dataManager.getAdminSessionToken();
+    res.cookie('admin_session', token, {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       sameSite: 'lax'
@@ -185,6 +237,31 @@ app.post('/admin/login', (req, res) => {
     return res.redirect('/admin');
   }
   res.render('admin/login', { error: 'Invalid username or password. Please try again.' });
+});
+
+// Admin change password API (Protected)
+app.post('/admin/api/change-password', requireAdminAuth, (req, res) => {
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+  if (!newPassword || newPassword.trim().length < 6) {
+    return res.status(400).json({ success: false, error: 'New password must be at least 6 characters long.' });
+  }
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ success: false, error: 'New passwords do not match.' });
+  }
+
+  const result = dataManager.changeAdminPassword(currentPassword, newPassword);
+  if (!result.success) {
+    return res.status(400).json(result);
+  }
+
+  // Refresh session cookie with the new token
+  const token = dataManager.getAdminSessionToken();
+  res.cookie('admin_session', token, {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: 'lax'
+  });
+  res.json({ success: true, message: 'Password successfully changed! Your active session has been renewed.' });
 });
 
 // Admin logout
@@ -200,7 +277,7 @@ app.get('/admin', requireAdminAuth, (req, res) => {
   res.render('admin/dashboard', {
     models,
     stats,
-    adminUser: ADMIN_USER
+    adminUser: dataManager.getAdminUsername()
   });
 });
 
@@ -286,7 +363,7 @@ app.listen(PORT, HOST, () => {
   console.log('===========================================================');
   console.log(` > Public Portal:  http://localhost:${PORT}`);
   console.log(` > Admin Console:  http://localhost:${PORT}/admin`);
-  console.log(` > Admin User:     ${ADMIN_USER}`);
+  console.log(` > Admin Status:   ${dataManager.isAdminConfigured() ? `Configured (User: ${dataManager.getAdminUsername()})` : 'First-Time Setup Required (Visit /admin/setup)'}`);
   
   // Find and log local network IPv4 addresses
   const interfaces = os.networkInterfaces();

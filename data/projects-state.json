@@ -203,5 +203,6 @@
   },
   "customProjects": [],
   "ratings": {},
-  "deletedProjectIds": []
+  "deletedProjectIds": [],
+  "adminSecurity": null
 }

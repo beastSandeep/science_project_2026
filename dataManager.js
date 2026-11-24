@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const baseData = require('./data');
 
 const stateFilePath = path.join(__dirname, 'data', 'projects-state.json');
@@ -10,26 +11,28 @@ function loadStateData() {
     if (fs.existsSync(stateFilePath)) {
       const raw = fs.readFileSync(stateFilePath, 'utf8');
       const parsed = JSON.parse(raw);
-      if (parsed.states || parsed.customProjects || parsed.ratings || parsed.deletedProjectIds) {
+      if (parsed.states || parsed.customProjects || parsed.ratings || parsed.deletedProjectIds || parsed.adminSecurity !== undefined) {
         return {
           states: parsed.states || {},
           customProjects: parsed.customProjects || [],
           ratings: parsed.ratings || {},
-          deletedProjectIds: parsed.deletedProjectIds || []
+          deletedProjectIds: parsed.deletedProjectIds || [],
+          adminSecurity: parsed.adminSecurity || null
         };
       } else {
         return {
           states: parsed || {},
           customProjects: [],
           ratings: {},
-          deletedProjectIds: []
+          deletedProjectIds: [],
+          adminSecurity: null
         };
       }
     }
   } catch (err) {
     console.error('Error loading projects state:', err);
   }
-  return { states: {}, customProjects: [], ratings: {}, deletedProjectIds: [] };
+  return { states: {}, customProjects: [], ratings: {}, deletedProjectIds: [], adminSecurity: null };
 }
 
 function saveStateData(data) {
@@ -468,6 +471,90 @@ function generateCSV() {
   return [header.join(','), ...rows.map(r => r.join(','))].join('\n');
 }
 
+// -------------------------------------------------------------
+// DYNAMIC ADMIN CREDENTIALS & SECURITY
+// -------------------------------------------------------------
+
+const AUTH_SECRET = 'science-fair-2026-sandeep-auth-token-salt';
+
+function hashPassword(password, salt) {
+  return crypto.scryptSync(password, salt, 64).toString('hex');
+}
+
+function isAdminConfigured() {
+  return Boolean(
+    stateCache.adminSecurity &&
+    stateCache.adminSecurity.configured === true &&
+    stateCache.adminSecurity.passwordHash &&
+    stateCache.adminSecurity.salt
+  );
+}
+
+function getAdminUsername() {
+  return (stateCache.adminSecurity && stateCache.adminSecurity.username) || 'admin';
+}
+
+function verifyAdminPassword(password) {
+  if (!isAdminConfigured()) return false;
+  if (!password || typeof password !== 'string') return false;
+  try {
+    const salt = stateCache.adminSecurity.salt;
+    const computedHash = hashPassword(password, salt);
+    const storedBuf = Buffer.from(stateCache.adminSecurity.passwordHash, 'hex');
+    const computedBuf = Buffer.from(computedHash, 'hex');
+    if (storedBuf.length !== computedBuf.length) return false;
+    return crypto.timingSafeEqual(storedBuf, computedBuf);
+  } catch (e) {
+    console.error('Password verification error:', e);
+    return false;
+  }
+}
+
+function setAdminPassword(newPassword, username = 'admin') {
+  if (!newPassword || typeof newPassword !== 'string' || newPassword.trim().length < 6) {
+    return { success: false, error: 'Password must be at least 6 characters long.' };
+  }
+  const cleanUsername = username && typeof username === 'string' && username.trim() !== '' ? username.trim() : 'admin';
+  const salt = crypto.randomBytes(16).toString('hex');
+  const passwordHash = hashPassword(newPassword.trim(), salt);
+
+  stateCache.adminSecurity = {
+    configured: true,
+    username: cleanUsername,
+    salt: salt,
+    passwordHash: passwordHash,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveStateData(stateCache);
+  console.log(`[Security] Master admin password configured for user: ${cleanUsername}`);
+  return { success: true };
+}
+
+function changeAdminPassword(currentPassword, newPassword) {
+  if (!isAdminConfigured()) {
+    return { success: false, error: 'Admin is not configured yet. Complete initial setup first.' };
+  }
+  if (!verifyAdminPassword(currentPassword)) {
+    return { success: false, error: 'Current password is incorrect.' };
+  }
+  if (!newPassword || typeof newPassword !== 'string' || newPassword.trim().length < 6) {
+    return { success: false, error: 'New password must be at least 6 characters long.' };
+  }
+  if (currentPassword === newPassword.trim()) {
+    return { success: false, error: 'New password must be different from current password.' };
+  }
+
+  const currentUsername = getAdminUsername();
+  return setAdminPassword(newPassword.trim(), currentUsername);
+}
+
+function getAdminSessionToken() {
+  if (!isAdminConfigured()) return '';
+  const payload = `${stateCache.adminSecurity.username}:${stateCache.adminSecurity.passwordHash}:${stateCache.adminSecurity.salt}`;
+  return crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('hex');
+}
+
 module.exports = {
   getAllModels,
   getModel,
@@ -479,5 +566,11 @@ module.exports = {
   getProjectRatings,
   getStats,
   generateCSV,
-  baseData
+  baseData,
+  isAdminConfigured,
+  getAdminUsername,
+  verifyAdminPassword,
+  setAdminPassword,
+  changeAdminPassword,
+  getAdminSessionToken
 };

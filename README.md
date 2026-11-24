@@ -74,10 +74,12 @@ Open [http://localhost:3000](http://localhost:3000) in your web browser.
 The portal includes an administrative management console for event coordinators and teachers:
 
 - **URL:** [http://localhost:3000/admin](http://localhost:3000/admin)
-- **Username:** `admin`
-- **Password:** `Sandeep80055`
+- **First-Time Deployment Setup:** On your first launch, visiting `/admin` (or `/admin/setup`) prompts you to create your master administrator username and password. There are **no hardcoded default passwords**.
+- **Change Password Anytime:** An authenticated administrator can update their password at any time directly inside the Admin Dashboard using the **Change Password** control.
+- **Cryptographic Security:** Master passwords are dynamically salted with cryptographically secure random bytes and hashed using `scrypt` with constant-time verification.
 
 ### Admin Features
+- **First-Run Password Setup & Live Password Change:** Choose credentials on deployment without any hardcoded defaults; update credentials anytime.
 - **Live Voting Tallies & KPIs:** Real-time metrics showing total submitted votes and average scores across all models with 10-second polling.
 - **Delete Any Project:** Delete any project (base template or custom) from the fair with automatic disk cleanup of associated uploaded photos.
 - **Project Photo Replacement & Safe Cleanup:** Prominently preview photos in project editing; replaces old photos and automatically deletes the old file from `public/uploads/` on disk strictly upon successful update.
@@ -106,7 +108,8 @@ The portal includes an administrative management console for event coordinators 
 │   ├── rate.pug              # Mobile-first voting portal with confetti celebration
 │   └── admin/
 │       ├── dashboard.pug     # Comprehensive admin control center with live votes
-│       └── login.pug         # Secure glassmorphic admin login
+│       ├── login.pug         # Secure glassmorphic admin login
+│       └── setup.pug         # First-time master password setup wizard
 ├── data.js                   # 20 curated baseline scientific models
 ├── dataManager.js            # In-memory reactive state manager (projects, votes, awards)
 ├── server.js                 # Express server with PNA, uploads, and voting APIs
