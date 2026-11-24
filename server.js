@@ -47,6 +47,11 @@ app.set('view engine', 'pug');
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Favicon fallback
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'favicon.svg'));
+});
+
 // Admin authentication middleware
 function requireAdminAuth(req, res, next) {
   const token = req.cookies.admin_session;
