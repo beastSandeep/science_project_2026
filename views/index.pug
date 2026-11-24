@@ -73,6 +73,16 @@ html(lang="en")
           linear-gradient(to right, rgba(51, 65, 85, 0.08) 1px, transparent 1px),
           linear-gradient(to bottom, rgba(51, 65, 85, 0.08) 1px, transparent 1px);
       }
+      .scroll-reveal {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, transform;
+      }
+      .scroll-reveal.is-revealed {
+        opacity: 1;
+        transform: translateY(0);
+      }
 
   body(class="bg-slate-950 text-slate-100 min-h-screen relative font-sans overflow-x-hidden selection:bg-cyan-500 selection:text-black sci-grid" x-data="scienceFairApp()" @keydown.window="handleKeyboard($event)" x-cloak)
 
@@ -136,6 +146,13 @@ html(lang="en")
               class="hidden sm:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all"
             )
               span Judging Rubric
+            a(
+              href="/rate"
+              class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 transition-all flex items-center space-x-1"
+              title="Vote &amp; Rate Projects on Mobile"
+            )
+              span 🗳️
+              span Vote
             a(
               href="/admin"
               class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-cyan-400 bg-slate-900 border border-slate-800 hover:border-cyan-500/40 transition-all flex items-center space-x-1"
@@ -296,7 +313,7 @@ html(lang="en")
         )
           template(x-for="model in filteredModels()" :key="model.id")
             div(
-              class="glass-card rounded-2xl overflow-hidden flex flex-col group relative"
+              class="glass-card rounded-2xl overflow-hidden flex flex-col group relative scroll-reveal"
               :class="model.isWinner ? 'border-amber-500/70 shadow-[0_0_28px_rgba(245,158,11,0.22)] ring-1 ring-amber-500/50' : ''"
             )
               //- Image Container
@@ -362,6 +379,13 @@ html(lang="en")
                   )
                   p(class="text-xs text-slate-400 line-clamp-2 leading-relaxed" x-text="model.concept")
                   
+                  //- Live Community Rating (if rated)
+                  template(x-if="model.ratingCount > 0")
+                    div(class="flex items-center space-x-1.5 text-[11px] font-mono text-amber-300 pt-0.5")
+                      span ★
+                      span(class="font-bold" x-text="model.averageRating")
+                      span(class="text-slate-400 text-[10px]" x-text="'(' + model.ratingCount + (model.ratingCount === 1 ? ' vote)' : ' votes)')")
+
                   //- Multi-student or single student display
                   template(x-if="(model.assignedStudents && model.assignedStudents.length > 0) || (model.assignedStudent && model.assignedStudent.trim() !== '')")
                     div(class="flex items-center space-x-1.5 text-[11px] font-mono text-emerald-400 pt-0.5")
@@ -393,6 +417,13 @@ html(lang="en")
                       circle(cx="12" cy="12" r="3")
                     span Explore Project
 
+                  a(
+                    :href="'/rate?projectNo=' + model.id"
+                    title="Vote &amp; Rate this project from mobile"
+                    class="p-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 hover:text-purple-200 border border-purple-500/30 transition flex items-center justify-center flex-shrink-0"
+                  )
+                    span 🗳️
+
                   template(x-if="model.videoUrl && model.videoUrl.trim() !== ''")
                     a(
                       :href="model.videoUrl"
@@ -422,7 +453,7 @@ html(lang="en")
       section#blueprint-section(class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-10")
         
         //- Section 1: Presentation Formula
-        div(class="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-6")
+        div(class="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-6 scroll-reveal")
           div(class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4")
             div
               div(class="text-xs font-mono text-cyan-400 uppercase tracking-wider font-semibold") Science Exhibition Blueprint
@@ -442,7 +473,7 @@ html(lang="en")
         //- Section 2: Judging Rubric & Preparation Timeline
         div(class="grid grid-cols-1 lg:grid-cols-2 gap-6")
           //- Judging Rubric
-          div#rubric-section(class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-5")
+          div#rubric-section(class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-5 scroll-reveal")
             div(class="flex items-center justify-between border-b border-slate-800 pb-3")
               div
                 div(class="text-xs font-mono text-violet-400 uppercase tracking-wider font-semibold") Evaluation Rubric
@@ -458,7 +489,7 @@ html(lang="en")
                   span(class="font-mono text-xs font-bold px-2 py-1 rounded bg-slate-800 text-cyan-400 border border-slate-700 flex-shrink-0")= rub.weight
 
           //- Project Checklist Timeline
-          div(class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-5")
+          div(class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-5 scroll-reveal")
             div(class="flex items-center justify-between border-b border-slate-800 pb-3")
               div
                 div(class="text-xs font-mono text-emerald-400 uppercase tracking-wider font-semibold") Project Execution Guide
@@ -679,6 +710,26 @@ html(lang="en")
                     polyline(points="15 3 21 3 21 9")
                     line(x1="10" y1="14" x2="21" y2="3")
 
+            //- Community Live Voting / Rating Banner
+            div(class="p-4 rounded-xl bg-purple-950/25 border border-purple-500/35 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md")
+              div(class="flex items-center space-x-3")
+                div(class="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-xl shadow-inner flex-shrink-0")
+                  span 🗳️
+                div
+                  div(class="text-xs font-bold text-white flex items-center space-x-1.5")
+                    span Science Fair Public Voting
+                    template(x-if="activeModel?.ratingCount > 0")
+                      span(class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold" x-text="'★ ' + activeModel?.averageRating + ' (' + activeModel?.ratingCount + ')'")
+                  p(class="text-[11px] text-slate-300 leading-tight") Cast your judge or visitor ballot for this science exhibit from your mobile device.
+              a(
+                :href="'/rate?projectNo=' + activeModel?.id"
+                class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs transition flex items-center justify-center space-x-2 shadow-lg shadow-purple-600/25 flex-shrink-0 self-start sm:self-auto"
+              )
+                span Rate on Mobile
+                svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5")
+                  path(d="M5 12h14")
+                  path(d="m12 5 7 7-7 7")
+
             //- How It Works (Working Mechanism)
             div(class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5")
               div(class="flex items-center space-x-2 text-cyan-400")
@@ -800,6 +851,20 @@ html(lang="en")
             } catch (err) {
               console.warn('Initial models loaded from server memory cache');
             }
+
+            this.$nextTick(() => {
+              initScrollReveal();
+            });
+
+            this.$watch('searchQuery', () => {
+              this.$nextTick(() => initScrollReveal());
+            });
+            this.$watch('selectedCategory', () => {
+              this.$nextTick(() => initScrollReveal());
+            });
+            this.$watch('selectedDifficulty', () => {
+              this.$nextTick(() => initScrollReveal());
+            });
           },
 
           getCategoryCount(cat) {
@@ -949,6 +1014,35 @@ html(lang="en")
           }
         };
       }
+
+      //- Scroll Entrance Animation Observer (Triggers strictly once)
+      function initScrollReveal() {
+        if (!('IntersectionObserver' in window)) {
+          document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('is-revealed'));
+          return;
+        }
+
+        const observer = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-revealed');
+              obs.unobserve(entry.target); // Guarantees animation triggers strictly once
+            }
+          });
+        }, {
+          root: null,
+          rootMargin: '0px 0px -30px 0px',
+          threshold: 0.05
+        });
+
+        document.querySelectorAll('.scroll-reveal:not(.is-revealed)').forEach(el => {
+          observer.observe(el);
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        initScrollReveal();
+      });
 
       //- Interactive Scientific Particle & Orbital Canvas Animation
       (function() {

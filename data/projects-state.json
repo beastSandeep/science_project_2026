@@ -201,5 +201,7 @@
       "award": "None"
     }
   },
-  "customProjects": []
+  "customProjects": [],
+  "ratings": {},
+  "deletedProjectIds": []
 }

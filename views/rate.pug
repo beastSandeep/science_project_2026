@@ -1,0 +1,424 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no")
+    title Vote &amp; Rate Science Project – Science Fair 2026
+    link(rel="icon" type="image/svg+xml" href="/favicon.svg")
+    link(rel="preconnect" href="https://fonts.googleapis.com")
+    link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
+    link(href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet")
+    script(src="https://cdn.tailwindcss.com")
+    script.
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              scicyan: { 400: '#22d3ee', 500: '#06b6d4' }
+            }
+          }
+        }
+      }
+    script(defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js")
+    script(src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js")
+    style.
+      [x-cloak] { display: none !important; }
+      .glass-panel {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(51, 65, 85, 0.55);
+      }
+      .star-btn {
+        transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease;
+      }
+      .star-btn:active {
+        transform: scale(1.35);
+      }
+      @keyframes popIn {
+        0% { transform: scale(0.85); opacity: 0; }
+        70% { transform: scale(1.04); }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      .animate-pop-in {
+        animation: popIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+  body(class="bg-slate-950 text-slate-100 min-h-screen relative font-sans flex flex-col justify-between selection:bg-cyan-500 selection:text-black overflow-x-hidden" x-data="votingApp()" x-cloak)
+
+    //- Ambient Luminous Background Accents
+    div(class="fixed top-[-10%] left-[-15%] w-[70vw] h-[70vw] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none z-0")
+    div(class="fixed bottom-[-10%] right-[-15%] w-[70vw] h-[70vw] bg-violet-600/10 rounded-full blur-[100px] pointer-events-none z-0")
+
+    //- Sticky Compact Header
+    header(class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-4 py-3")
+      div(class="max-w-lg mx-auto flex items-center justify-between")
+        a(href="/" class="flex items-center space-x-2 text-white hover:text-cyan-400 transition")
+          div(class="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-violet-500 p-[1px] flex items-center justify-center")
+            div(class="w-full h-full bg-slate-950 rounded-[7px] flex items-center justify-center")
+              svg(class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                circle(cx="12" cy="12" r="3")
+          div
+            div(class="font-extrabold text-xs tracking-tight uppercase") Science Fair 2026
+            div(class="text-[10px] text-slate-400 font-mono") Live Mobile Balloting
+        
+        a(
+          href="/"
+          class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300 hover:text-cyan-400 transition flex items-center space-x-1"
+        )
+          span View Fair
+          svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+            path(d="m9 18 6-6-6-6")
+
+    //- Main Mobile Voting Container
+    main(class="relative z-10 max-w-lg mx-auto w-full px-4 py-5 flex-1 flex flex-col justify-center")
+      
+      //- 1. Success Confetti & Celebration View (Shown after voting)
+      div(
+        x-show="voteSuccess"
+        class="glass-panel rounded-3xl p-6 sm:p-8 text-center space-y-5 border border-cyan-500/40 shadow-2xl shadow-cyan-500/10 animate-pop-in"
+      )
+        div(class="w-20 h-20 mx-auto rounded-full bg-gradient-to-tr from-cyan-500/20 via-emerald-500/20 to-teal-500/20 border-2 border-emerald-400/80 flex items-center justify-center text-4xl shadow-lg shadow-emerald-500/20 animate-bounce")
+          span 🏆
+
+        div(class="space-y-1.5")
+          div(class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold")
+            span(class="w-2 h-2 rounded-full bg-emerald-400 animate-ping")
+            span(x-text="wasVoteUpdated ? 'Vote Updated!' : 'Official Vote Counted!'")
+          h2(class="text-xl sm:text-2xl font-extrabold text-white tracking-tight")
+            | Thank You, <span class="text-cyan-400" x-text="voterName"></span>!
+          p(class="text-xs text-slate-300 leading-relaxed")
+            | Your score of <span class="text-amber-300 font-bold" x-text="rating + ' Stars (⭐)'"></span> for <span class="text-white font-semibold" x-text="'Model #' + selectedModel?.id + ' – ' + selectedModel?.title"></span> has been added to the live exhibition tally.
+
+        //- Live Model Rating Card
+        div(class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2 text-xs")
+          div(class="flex items-center justify-between text-slate-400")
+            span Live Fair Average:
+            span(class="font-mono text-amber-300 font-bold text-sm flex items-center space-x-1")
+              span ★
+              span(x-text="liveAverageRating > 0 ? liveAverageRating : rating")
+              span(class="text-slate-500 text-xs font-normal" x-text="'(' + liveRatingCount + ' votes)'")
+          div(class="flex items-center justify-between text-slate-400")
+            span Student / Team:
+            span(class="text-emerald-300 font-semibold truncate max-w-[200px]" x-text="selectedModel?.assignedStudents && selectedModel?.assignedStudents.length > 0 ? selectedModel?.assignedStudents.join(', ') : (selectedModel?.assignedStudent || 'Student Maker')")
+
+        //- Action Buttons after voting
+        div(class="pt-3 space-y-2.5")
+          button(
+            @click="voteSuccess = false; wasVoteUpdated = true;"
+            class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 transition flex items-center justify-center space-x-1.5"
+          )
+            svg(class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+              path(d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7")
+              path(d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z")
+            span Modify My Rating for this Model
+          
+          button(
+            @click="selectAnotherProject()"
+            class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-lg shadow-cyan-500/20"
+          )
+            span Rate Another Science Project
+            svg(class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+              path(d="M5 12h14")
+              path(d="m12 5 7 7-7 7")
+
+          a(
+            href="/"
+            class="block py-2 text-center text-xs text-slate-400 hover:text-white transition"
+          )
+            | &larr; Return to Exhibition Models Showcase
+
+      //- 2. Voting Form View (Active balloting)
+      div(
+        x-show="!voteSuccess"
+        class="glass-panel rounded-3xl p-5 sm:p-7 space-y-5 border border-slate-800 shadow-2xl"
+      )
+        //- Card Header
+        div(class="space-y-1 text-center")
+          div(class="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[11px] font-mono font-semibold")
+            span 🗳️
+            span Public Visitor &amp; Judge Voting
+          h1(class="text-lg sm:text-xl font-extrabold text-white tracking-tight")
+            | Rate Science Model
+          p(class="text-xs text-slate-400")
+            | Cast your vote for the best student working models and demonstrations.
+
+        //- Previous Vote Notification Banner (Localstorage indicator)
+        template(x-if="hasPreviouslyVoted")
+          div(class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-xs")
+            div(class="flex items-center space-x-2 text-amber-300 font-mono")
+              span ℹ️
+              span You previously rated this model:
+              span(class="font-bold text-white" x-text="rating + ' Stars'")
+            span(class="text-[10px] text-amber-400 underline font-mono") You can change it below
+
+        form(@submit.prevent="submitBallot()" class="space-y-4")
+
+          //- Project Selector
+          div(class="space-y-1.5")
+            label(class="block font-mono text-xs uppercase tracking-wider text-slate-300 font-bold")
+              | Select Project <span class="text-rose-400">*</span>
+            select(
+              x-model="selectedProjectId"
+              @change="onProjectChange()"
+              class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs sm:text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+            )
+              template(x-for="m in models" :key="m.id")
+                option(
+                  :value="m.id"
+                  x-text="'#' + (m.id < 10 ? '0' + m.id : m.id) + ' – ' + m.title + ' (' + m.category + ')'"
+                )
+
+          //- Selected Project Quick Preview
+          template(x-if="selectedModel")
+            div(class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center space-x-3")
+              div(class="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-950 border border-slate-700 flex-shrink-0")
+                img(:src="selectedModel.image" :alt="selectedModel.title" class="w-full h-full object-cover")
+              div(class="min-w-0 flex-1")
+                div(class="text-[10px] font-mono text-cyan-400 font-bold truncate" x-text="selectedModel.category")
+                div(class="text-xs font-bold text-white truncate" x-text="selectedModel.title")
+                div(class="text-[11px] text-slate-400 truncate" x-text="selectedModel.assignedStudents && selectedModel.assignedStudents.length > 0 ? selectedModel.assignedStudents.join(', ') : (selectedModel.assignedStudent || 'General Project')")
+                template(x-if="selectedModel.averageRating > 0")
+                  div(class="text-[10px] text-amber-300 font-mono pt-0.5 flex items-center space-x-1")
+                    span ★
+                    span(x-text="selectedModel.averageRating")
+                    span(class="text-slate-500" x-text="'(' + selectedModel.ratingCount + ' ratings)'")
+
+          //- Mandatory Voter Name
+          div(class="space-y-1.5")
+            label(class="block font-mono text-xs uppercase tracking-wider text-slate-300 font-bold flex items-center justify-between")
+              span Your Full Name <span class="text-rose-400">*</span>
+              span(class="text-[10px] text-rose-400 font-normal font-sans") Mandatory
+            input(
+              type="text"
+              required
+              x-model="voterName"
+              placeholder="e.g. Priya Sharma (Parent / Visitor / Judge)"
+              class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
+            )
+
+          //- Interactive 5-Star Rating Selector (Large touch targets for mobile)
+          div(class="space-y-2 pt-1")
+            div(class="flex items-center justify-between")
+              label(class="font-mono text-xs uppercase tracking-wider text-slate-300 font-bold")
+                | Your Star Rating <span class="text-rose-400">*</span>
+              span(class="text-xs font-mono font-bold text-amber-400" x-text="ratingLabels[rating] || 'Select Rating'")
+
+            div(class="flex items-center justify-center space-x-2.5 py-2 px-3 bg-slate-900/80 border border-slate-800 rounded-2xl")
+              template(x-for="star in [1, 2, 3, 4, 5]" :key="star")
+                button(
+                  type="button"
+                  @click="rating = star"
+                  @mouseenter="hoverRating = star"
+                  @mouseleave="hoverRating = 0"
+                  class="star-btn p-1.5 text-3xl sm:text-4xl focus:outline-none transition-colors"
+                  :class="(hoverRating || rating) >= star ? 'text-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]' : 'text-slate-700'"
+                )
+                  | ★
+
+          //- Optional Encouraging Feedback / Remarks
+          div(class="space-y-1.5")
+            label(class="block font-mono text-xs uppercase tracking-wider text-slate-300 font-semibold flex items-center justify-between")
+              span Encouraging Note / Comments
+              span(class="text-[10px] text-slate-400 font-normal") Optional
+            textarea(
+              rows="2"
+              x-model="comment"
+              placeholder="e.g. Fantastic working hydraulics! The live test was impressive."
+              class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+            )
+
+          //- Submit Button with Loading State
+          div(class="pt-2")
+            button(
+              type="submit"
+              :disabled="isSubmitting || !voterName.trim()"
+              class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-sm tracking-wide transition flex items-center justify-center space-x-2 shadow-xl shadow-cyan-500/25"
+            )
+              template(x-if="isSubmitting")
+                span Recording Ballot...
+              template(x-if="!isSubmitting")
+                span(class="flex items-center space-x-2")
+                  span(x-text="hasPreviouslyVoted ? 'Update My Vote' : 'Submit Official Vote'")
+                  span 🗳️
+
+    //- Minimal Mobile Footer
+    footer(class="relative z-10 py-4 text-center text-xs text-slate-500 font-mono")
+      p &copy; 2026 Science Fair Lab &bull; Owned by Sandeep Singh
+
+    //- Embedded Alpine Store for Rating Logic
+    script.
+      const serverModels = !{JSON.stringify(models)};
+      const initialProjectNo = "#{projectNo}";
+
+      function votingApp() {
+        return {
+          models: serverModels,
+          selectedProjectId: initialProjectNo ? parseInt(initialProjectNo) : (serverModels[0]?.id || 1),
+          selectedModel: null,
+          voterName: '',
+          voterId: '',
+          rating: 5,
+          hoverRating: 0,
+          comment: '',
+          isSubmitting: false,
+          voteSuccess: false,
+          hasPreviouslyVoted: false,
+          wasVoteUpdated: false,
+          liveAverageRating: 0,
+          liveRatingCount: 0,
+
+          ratingLabels: {
+            1: '⭐ 1 Star – Needs Improvement',
+            2: '⭐⭐ 2 Stars – Fair Effort',
+            3: '⭐⭐⭐ 3 Stars – Good Working Model',
+            4: '⭐⭐⭐⭐ 4 Stars – Excellent Demonstration',
+            5: '⭐⭐⭐⭐⭐ 5 Stars – Outstanding Champion!'
+          },
+
+          init() {
+            // 1. Initialize stable voter UUID from localStorage
+            let storedVoterId = localStorage.getItem('scifair_voter_id');
+            if (!storedVoterId) {
+              storedVoterId = 'voter_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+              localStorage.setItem('scifair_voter_id', storedVoterId);
+            }
+            this.voterId = storedVoterId;
+
+            // 2. Load stored voter name
+            const storedName = localStorage.getItem('scifair_voter_name');
+            if (storedName) {
+              this.voterName = storedName;
+            }
+
+            // 3. Match selected project
+            this.updateSelectedModel();
+          },
+
+          updateSelectedModel() {
+            this.selectedModel = this.models.find(m => m.id === parseInt(this.selectedProjectId)) || this.models[0];
+            this.checkPreviousVote();
+          },
+
+          onProjectChange() {
+            this.updateSelectedModel();
+          },
+
+          checkPreviousVote() {
+            if (!this.selectedModel) return;
+            try {
+              const votesMap = JSON.parse(localStorage.getItem('scifair_votes') || '{}');
+              const prev = votesMap[this.selectedModel.id];
+              if (prev) {
+                this.hasPreviouslyVoted = true;
+                this.rating = prev.rating || 5;
+                if (prev.comment) this.comment = prev.comment;
+              } else {
+                this.hasPreviouslyVoted = false;
+                this.rating = 5;
+                this.comment = '';
+              }
+            } catch (err) {
+              this.hasPreviouslyVoted = false;
+            }
+          },
+
+          async submitBallot() {
+            if (!this.voterName.trim()) {
+              alert('Please enter your full name before submitting.');
+              return;
+            }
+
+            this.isSubmitting = true;
+
+            const payload = {
+              projectId: this.selectedModel.id,
+              voterId: this.voterId,
+              voterName: this.voterName.trim(),
+              rating: this.rating,
+              comment: this.comment.trim()
+            };
+
+            try {
+              const res = await fetch('/api/rate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+
+              if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || 'Vote submission failed');
+              }
+
+              const data = await res.json();
+
+              // Save in localStorage
+              localStorage.setItem('scifair_voter_name', this.voterName.trim());
+              const votesMap = JSON.parse(localStorage.getItem('scifair_votes') || '{}');
+              votesMap[this.selectedModel.id] = {
+                rating: this.rating,
+                comment: this.comment.trim(),
+                timestamp: new Date().toISOString()
+              };
+              localStorage.setItem('scifair_votes', JSON.stringify(votesMap));
+
+              this.wasVoteUpdated = data.wasUpdated;
+              this.liveAverageRating = data.averageRating;
+              this.liveRatingCount = data.ratingCount;
+              this.voteSuccess = true;
+
+              // Fire celebratory confetti animation especially delightful on mobile!
+              this.triggerCelebration();
+
+            } catch (err) {
+              alert('Error submitting vote: ' + err.message);
+            } finally {
+              this.isSubmitting = false;
+            }
+          },
+
+          triggerCelebration() {
+            if (typeof confetti === 'function') {
+              // 1. Initial burst
+              confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 }
+              });
+
+              // 2. Staggered secondary gold & cyan confetti
+              setTimeout(() => {
+                confetti({
+                  particleCount: 50,
+                  angle: 60,
+                  spread: 55,
+                  origin: { x: 0 },
+                  colors: ['#22d3ee', '#fbbf24', '#34d399', '#a78bfa']
+                });
+                confetti({
+                  particleCount: 50,
+                  angle: 120,
+                  spread: 55,
+                  origin: { x: 1 },
+                  colors: ['#22d3ee', '#fbbf24', '#34d399', '#a78bfa']
+                });
+              }, 250);
+            }
+          },
+
+          selectAnotherProject() {
+            this.voteSuccess = false;
+            // Advance to next project in list or project 1
+            const curIdx = this.models.findIndex(m => m.id === this.selectedModel.id);
+            const nextIdx = (curIdx + 1) % this.models.length;
+            this.selectedProjectId = this.models[nextIdx].id;
+            this.updateSelectedModel();
+          }
+        };
+      }

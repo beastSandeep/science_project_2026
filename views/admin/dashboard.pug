@@ -105,6 +105,15 @@ html(lang="en")
               span(class="hidden sm:inline") Export CSV
 
             a(
+              href="/rate"
+              target="_blank"
+              class="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 text-xs text-purple-300 transition flex items-center space-x-1.5"
+              title="Open Public Voting Portal"
+            )
+              span 🗳️
+              span(class="hidden sm:inline") Public Voting
+
+            a(
               href="/"
               target="_blank"
               class="px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 text-xs text-cyan-400 transition flex items-center space-x-1.5"
@@ -139,7 +148,7 @@ html(lang="en")
           span(x-text="toastMessage")
 
         //- Stats Metric Cards
-        div(class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5")
+        div(class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3.5")
           //- Total
           div(class="glass-panel rounded-2xl p-4 border border-slate-800 space-y-1")
             div(class="text-[10px] font-mono uppercase tracking-wider text-slate-400") Total Models
@@ -177,6 +186,14 @@ html(lang="en")
               span Winners
             div(class="text-2xl font-extrabold text-yellow-300 font-mono" x-text="stats.winners || 0")
             div(class="text-[10px] text-yellow-400/80 font-mono") Award Declared
+
+          //- Live Public Votes
+          div(class="glass-panel rounded-2xl p-4 border border-rose-500/40 space-y-1 bg-rose-950/15 shadow-[0_0_20px_rgba(244,63,94,0.1)]")
+            div(class="text-[10px] font-mono uppercase tracking-wider text-rose-400 flex items-center space-x-1")
+              span 🗳️
+              span Live Votes
+            div(class="text-2xl font-extrabold text-rose-300 font-mono" x-text="stats.totalVotes || 0")
+            div(class="text-[10px] text-rose-400/80 font-mono") Public Ballots
 
         //- Filter & Management Controls
         div(class="glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 space-y-4")
@@ -246,6 +263,7 @@ html(lang="en")
                   th(class="py-3 px-4") Status
                   th(class="py-3 px-4") Award / Winner
                   th(class="py-3 px-4") Student Team
+                  th(class="py-3 px-4") Live Votes
                   th(class="py-3 px-4") Table #
                   th(class="py-3 px-4 text-right") Action
               tbody(class="divide-y divide-slate-800/80 font-sans")
@@ -306,6 +324,17 @@ html(lang="en")
                           class="px-2.5 py-1 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition font-mono text-[11px]"
                         ) + Assign Team
 
+                    //- Live Community Votes
+                    td(class="py-3 px-4")
+                      template(x-if="model.ratingCount > 0")
+                        div(class="space-y-0.5")
+                          div(class="flex items-center space-x-1 text-amber-300 font-mono text-xs font-bold")
+                            span ★
+                            span(x-text="model.averageRating")
+                          div(class="text-[10px] text-slate-400 font-mono" x-text="model.ratingCount + (model.ratingCount === 1 ? ' vote' : ' votes')")
+                      template(x-if="!model.ratingCount || model.ratingCount === 0")
+                        span(class="text-slate-500 font-mono text-[11px]") 0 votes
+
                     //- Booth Number
                     td(class="py-3 px-4 font-mono text-slate-300")
                       span(x-text="model.boothNumber || 'Unassigned'")
@@ -333,16 +362,15 @@ html(lang="en")
                             path(d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z")
                           span Edit
 
-                        template(x-if="model.isCustom")
-                          button(
-                            @click="deleteCustomProject(model.id, model.title)"
-                            class="p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs transition"
-                            title="Delete Custom Project"
-                          )
-                            svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
-                              path(d="M3 6h18")
-                              path(d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6")
-                              path(d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2")
+                        button(
+                          @click="deleteAnyProject(model.id, model.title)"
+                          class="p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs transition"
+                          title="Delete Project from Fair"
+                        )
+                          svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                            path(d="M3 6h18")
+                            path(d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6")
+                            path(d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2")
 
         //- Edit Assignment, Photo & Award Modal
         div(
@@ -377,30 +405,31 @@ html(lang="en")
             //- Modal Body / Form
             div(class="p-4 sm:p-6 overflow-y-auto space-y-5 text-xs")
 
-              //- Photo Upload Section
-              div(class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3")
+              //- Current Project Photo Preview & Replacement
+              div(class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3")
                 div(class="flex items-center justify-between")
                   div(class="flex items-center space-x-2 text-cyan-400 font-mono font-bold uppercase")
                     svg(class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
-                      path(d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11")
+                      rect(width="18" height="18" x="3" y="3" rx="2" ry="2")
                       circle(cx="9" cy="9" r="2")
                       path(d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21")
-                    span Project Photo (Upload When Built / Ready)
-                  span(class="text-[10px] text-slate-400") Max 15MB (JPG, PNG, WEBP)
+                    span Current Project Photo
+                  span(class="text-[10px] text-slate-400 font-mono" x-text="editForm.image ? 'Photo Attached' : 'Default Diagram'")
 
                 div(class="flex flex-col sm:flex-row items-center gap-4")
-                  div(class="w-28 h-20 rounded-lg bg-slate-900 border border-slate-700 overflow-hidden flex-shrink-0")
+                  div(class="relative w-36 h-24 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden flex-shrink-0 shadow-lg")
                     img(:src="editForm.image || editingModel?.image" class="w-full h-full object-cover" onerror="this.src='/images/default-project.svg'")
-                  
-                  div(class="flex-1 w-full space-y-1.5")
-                    label(class="block")
-                      input(
-                        type="file"
-                        accept="image/*"
-                        @change="uploadPhoto($event)"
-                        class="block w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer"
-                      )
-                    p(class="text-[11px] text-slate-500") Upload real photo of the completed working model taken on phone or camera.
+                    div(class="absolute bottom-0 inset-x-0 bg-slate-950/80 text-[9px] text-slate-300 font-mono text-center py-0.5 truncate px-1" x-text="editForm.image || 'Default Image'")
+
+                  div(class="flex-1 w-full space-y-2")
+                    label(class="cursor-pointer inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-semibold transition")
+                      input(type="file" accept="image/*" class="hidden" @change="uploadPhoto($event)")
+                      svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                        path(d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4")
+                        polyline(points="17 8 12 3 7 8")
+                        line(x1="12" y1="12" x2="12" y2="3")
+                      span Upload &amp; Replace Photo
+                    p(class="text-[11px] text-slate-400") Upload real photo of the completed working model. (Old uploads are automatically cleaned up on successful replacement).
 
               form(@submit.prevent="saveProjectChanges()" class="space-y-4")
                 
@@ -769,6 +798,33 @@ html(lang="en")
           categories: ['All', 'Physics', 'Mechanics', 'Electricity', 'Optics', 'Biology', 'Chemistry', 'Earth & Space'],
           statusOptions: ['All', 'Available', 'In Progress', 'Completed', 'Exhibited'],
 
+          init() {
+            // Live background polling every 10 seconds for real-time votes & ratings
+            setInterval(async () => {
+              try {
+                const res = await fetch('/api/models');
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data.models && Array.isArray(data.models)) {
+                    data.models.forEach(m => {
+                      const idx = this.models.findIndex(x => x.id === m.id);
+                      if (idx !== -1) {
+                        this.models[idx].ratingCount = m.ratingCount;
+                        this.models[idx].averageRating = m.averageRating;
+                        this.models[idx].ratings = m.ratings;
+                      }
+                    });
+                  }
+                  if (data.stats && data.stats.totalVotes !== undefined) {
+                    this.stats.totalVotes = data.stats.totalVotes;
+                  }
+                }
+              } catch (e) {
+                // Ignore background polling glitches
+              }
+            }, 10000);
+          },
+
           editForm: {
             assignedStudentsText: '',
             studentRoll: '',
@@ -1020,8 +1076,8 @@ html(lang="en")
             }
           },
 
-          async deleteCustomProject(id, title) {
-            if (!confirm(`Are you sure you want to delete custom model #${id} ("${title}")?`)) {
+          async deleteAnyProject(id, title) {
+            if (!confirm(`Are you sure you want to permanently remove Model #${id} ("${title}") from the science fair?\n\nThis will remove it from the public exhibition and delete any uploaded image file.`)) {
               return;
             }
 
@@ -1035,7 +1091,7 @@ html(lang="en")
 
               this.models = this.models.filter(m => m.id !== id);
               this.stats = data.stats;
-              this.showToast(`Deleted Model #${id}`);
+              this.showToast(`Removed Model #${id} from the fair`);
             } catch (err) {
               alert('Error deleting project: ' + err.message);
             }

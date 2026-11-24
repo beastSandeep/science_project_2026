@@ -10,22 +10,26 @@ function loadStateData() {
     if (fs.existsSync(stateFilePath)) {
       const raw = fs.readFileSync(stateFilePath, 'utf8');
       const parsed = JSON.parse(raw);
-      if (parsed.states || parsed.customProjects) {
+      if (parsed.states || parsed.customProjects || parsed.ratings || parsed.deletedProjectIds) {
         return {
           states: parsed.states || {},
-          customProjects: parsed.customProjects || []
+          customProjects: parsed.customProjects || [],
+          ratings: parsed.ratings || {},
+          deletedProjectIds: parsed.deletedProjectIds || []
         };
       } else {
         return {
           states: parsed || {},
-          customProjects: []
+          customProjects: [],
+          ratings: {},
+          deletedProjectIds: []
         };
       }
     }
   } catch (err) {
     console.error('Error loading projects state:', err);
   }
-  return { states: {}, customProjects: [] };
+  return { states: {}, customProjects: [], ratings: {}, deletedProjectIds: [] };
 }
 
 function saveStateData(data) {
@@ -37,6 +41,22 @@ function saveStateData(data) {
     fs.writeFileSync(stateFilePath, JSON.stringify(data, null, 2), 'utf8');
   } catch (err) {
     console.error('Error saving projects state:', err);
+  }
+}
+
+// Safely delete a superseded uploaded image from public/uploads/
+function safelyDeleteUploadFile(imageUrl) {
+  if (!imageUrl || typeof imageUrl !== 'string' || !imageUrl.startsWith('/uploads/')) return;
+  try {
+    const filename = path.basename(imageUrl);
+    if (!filename || filename.includes('..') || filename === '.gitkeep') return;
+    const fullPath = path.join(__dirname, 'public', 'uploads', filename);
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+      console.log(`[Storage] Deleted superseded project image: ${filename}`);
+    }
+  } catch (err) {
+    console.error('Error deleting upload file:', err);
   }
 }
 
@@ -79,7 +99,23 @@ baseData.models.forEach(m => {
 });
 saveStateData(stateCache);
 
+function attachRatings(m) {
+  const ratings = (stateCache.ratings && stateCache.ratings[m.id]) || [];
+  const ratingCount = ratings.length;
+  const averageRating = ratingCount > 0
+    ? parseFloat((ratings.reduce((acc, r) => acc + Number(r.rating || 0), 0) / ratingCount).toFixed(1))
+    : 0;
+  return {
+    ...m,
+    ratingCount,
+    averageRating,
+    ratings
+  };
+}
+
 function getAllModels() {
+  const deletedIds = new Set((stateCache.deletedProjectIds || []).map(Number));
+
   // 1. Process base models
   const baseModels = baseData.models.map(m => {
     const s = stateCache.states[m.id] || {};
@@ -124,7 +160,10 @@ function getAllModels() {
     };
   });
 
-  return [...baseModels, ...customModels].sort((a, b) => a.id - b.id);
+  return [...baseModels, ...customModels]
+    .filter(m => !deletedIds.has(m.id))
+    .map(attachRatings)
+    .sort((a, b) => a.id - b.id);
 }
 
 function getModel(id) {
@@ -214,7 +253,13 @@ function updateModel(id, updates) {
   if (updates.submissionDate !== undefined) stateCache.states[numId].submissionDate = String(updates.submissionDate).trim();
   if (updates.notes !== undefined) stateCache.states[numId].notes = String(updates.notes).trim();
   if (updates.award !== undefined) stateCache.states[numId].award = String(updates.award).trim();
-  if (updates.image !== undefined) stateCache.states[numId].image = String(updates.image).trim();
+  // Track previous image for deletion if changed
+  let oldImage = null;
+  if (updates.image !== undefined) {
+    const cur = getModel(numId);
+    oldImage = cur ? cur.image : (stateCache.states[numId] ? stateCache.states[numId].image : null);
+    stateCache.states[numId].image = String(updates.image).trim();
+  }
   if (updates.videoUrl !== undefined) stateCache.states[numId].videoUrl = String(updates.videoUrl).trim();
 
   // If custom project, allow updating metadata
@@ -228,7 +273,7 @@ function updateModel(id, updates) {
     if (updates.buildTime) cp.buildTime = updates.buildTime.trim();
     if (updates.realWorldApp) cp.realWorldApp = updates.realWorldApp.trim();
     if (updates.howItWorks) cp.howItWorks = updates.howItWorks.trim();
-    if (updates.image) cp.image = updates.image.trim();
+    if (updates.image !== undefined) cp.image = String(updates.image).trim();
     if (updates.videoUrl !== undefined) cp.videoUrl = updates.videoUrl.trim();
     if (updates.speech) cp.speech = updates.speech.trim();
     if (updates.award !== undefined) cp.award = updates.award.trim();
@@ -247,6 +292,12 @@ function updateModel(id, updates) {
   }
 
   saveStateData(stateCache);
+
+  // If image was changed and old image was an upload, delete old file only on successful update
+  if (updates.image !== undefined && oldImage && oldImage !== String(updates.image).trim() && oldImage.startsWith('/uploads/')) {
+    safelyDeleteUploadFile(oldImage);
+  }
+
   return getModel(numId);
 }
 
@@ -255,6 +306,9 @@ function updateProjectImage(id, imageUrl) {
   if (!stateCache.states[numId]) {
     stateCache.states[numId] = {};
   }
+  const cur = getModel(numId);
+  const oldImage = cur ? cur.image : (stateCache.states[numId].image || '');
+
   stateCache.states[numId].image = imageUrl;
 
   const customIdx = (stateCache.customProjects || []).findIndex(m => m.id === numId);
@@ -263,19 +317,101 @@ function updateProjectImage(id, imageUrl) {
   }
 
   saveStateData(stateCache);
+
+  // Only delete old file after state is successfully updated and saved
+  if (oldImage && oldImage !== imageUrl && oldImage.startsWith('/uploads/')) {
+    safelyDeleteUploadFile(oldImage);
+  }
+
   return getModel(numId);
 }
 
 function deleteModel(id) {
   const numId = parseInt(id);
+  const cur = getModel(numId);
+  const oldImage = cur ? cur.image : (stateCache.states[numId] ? stateCache.states[numId].image : null);
+
+  stateCache.deletedProjectIds = stateCache.deletedProjectIds || [];
+  if (!stateCache.deletedProjectIds.includes(numId)) {
+    stateCache.deletedProjectIds.push(numId);
+  }
+
   if (stateCache.customProjects) {
     stateCache.customProjects = stateCache.customProjects.filter(m => m.id !== numId);
   }
   if (stateCache.states[numId]) {
     delete stateCache.states[numId];
   }
+  if (stateCache.ratings && stateCache.ratings[numId]) {
+    delete stateCache.ratings[numId];
+  }
+
   saveStateData(stateCache);
+
+  // Clean up uploaded image file if present
+  if (oldImage && oldImage.startsWith('/uploads/')) {
+    safelyDeleteUploadFile(oldImage);
+  }
+
   return { success: true };
+}
+
+function submitVote({ projectId, voterId, voterName, rating, comment }) {
+  const pid = parseInt(projectId);
+  if (isNaN(pid)) {
+    return { success: false, error: 'Invalid project ID.' };
+  }
+  if (!voterName || typeof voterName !== 'string' || voterName.trim() === '') {
+    return { success: false, error: 'Voter name is mandatory.' };
+  }
+  const numericRating = parseInt(rating);
+  if (isNaN(numericRating) || numericRating < 1 || numericRating > 5) {
+    return { success: false, error: 'Rating must be between 1 and 5 stars.' };
+  }
+
+  stateCache.ratings = stateCache.ratings || {};
+  stateCache.ratings[pid] = stateCache.ratings[pid] || [];
+
+  const trimmedName = voterName.trim();
+  const vId = voterId && String(voterId).trim() !== '' ? String(voterId).trim() : `v_${trimmedName.toLowerCase().replace(/\s+/g, '_')}`;
+
+  // Check if voter already rated this project (by voterId or by name)
+  const existingIdx = stateCache.ratings[pid].findIndex(r =>
+    (r.voterId && r.voterId === vId) || (r.voterName && r.voterName.toLowerCase() === trimmedName.toLowerCase())
+  );
+
+  const voteEntry = {
+    voterId: vId,
+    voterName: trimmedName,
+    rating: numericRating,
+    comment: comment ? String(comment).trim() : '',
+    updatedAt: new Date().toISOString()
+  };
+
+  let wasUpdated = false;
+  if (existingIdx !== -1) {
+    stateCache.ratings[pid][existingIdx] = voteEntry;
+    wasUpdated = true;
+  } else {
+    stateCache.ratings[pid].push(voteEntry);
+  }
+
+  saveStateData(stateCache);
+
+  const updatedModel = getModel(pid);
+  return {
+    success: true,
+    wasUpdated,
+    projectId: pid,
+    vote: voteEntry,
+    ratingCount: updatedModel ? updatedModel.ratingCount : stateCache.ratings[pid].length,
+    averageRating: updatedModel ? updatedModel.averageRating : numericRating
+  };
+}
+
+function getProjectRatings(projectId) {
+  const pid = parseInt(projectId);
+  return (stateCache.ratings && stateCache.ratings[pid]) || [];
 }
 
 function getStats() {
@@ -302,7 +438,14 @@ function getStats() {
     }
   });
 
-  return { total, assigned, available, inProgress, completed, exhibited, winners };
+  let totalVotes = 0;
+  if (stateCache.ratings) {
+    Object.values(stateCache.ratings).forEach(arr => {
+      if (Array.isArray(arr)) totalVotes += arr.length;
+    });
+  }
+
+  return { total, assigned, available, inProgress, completed, exhibited, winners, totalVotes };
 }
 
 function generateCSV() {
@@ -332,6 +475,8 @@ module.exports = {
   updateModel,
   updateProjectImage,
   deleteModel,
+  submitVote,
+  getProjectRatings,
   getStats,
   generateCSV,
   baseData

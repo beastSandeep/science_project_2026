@@ -130,6 +130,37 @@ app.get('/api/models', (req, res) => {
   });
 });
 
+// Mobile Voting / Rating Page (/rate and /rate/?projectNo=)
+app.get('/rate', (req, res) => {
+  const models = dataManager.getAllModels();
+  const projectNo = req.query.projectNo || req.query.project || '';
+  res.render('rate', {
+    models: models,
+    projectNo: String(projectNo)
+  });
+});
+
+// Convenient shortcut /rate/:id
+app.get('/rate/:id', (req, res) => {
+  res.redirect(`/rate?projectNo=${encodeURIComponent(req.params.id)}`);
+});
+
+// Public voting API endpoint
+app.post('/api/rate', (req, res) => {
+  const { projectId, voterId, voterName, rating, comment } = req.body;
+  const result = dataManager.submitVote({ projectId, voterId, voterName, rating, comment });
+  if (!result.success) {
+    return res.status(400).json(result);
+  }
+  res.json(result);
+});
+
+// Get ratings for a project
+app.get('/api/ratings/:id', (req, res) => {
+  const ratings = dataManager.getProjectRatings(req.params.id);
+  res.json({ success: true, ratings });
+});
+
 // -------------------------------------------------------------
 // ADMIN ROUTES (/admin)
 // -------------------------------------------------------------
