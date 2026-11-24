@@ -72,9 +72,11 @@ The portal includes an administrative management console for event coordinators 
 - **Password:** `Sandeep80055`
 
 ### Admin Features
-- **Add Custom Projects:** Add new models/projects to the exhibition directly from the Admin Portal.
+- **Add Custom Projects with Photo & Video:** Add new models/projects to the exhibition directly from the Admin Portal with immediate photo file upload and optional YouTube video link.
 - **Multi-Student Team Assignment:** Assign single students or entire teams/groups to a single project.
-- **Photo Upload:** Upload real photos of the working project once built and ready for exhibition.
+- **Photo Upload:** Upload real photos of the working project when creating or editing a project.
+- **YouTube Video Demonstrations:** Optional YouTube video links for any model with 1-click redirection and card badges.
+- **In-Memory Reactive Data Store:** Projects and state are stored in high-performance server memory and kept synchronized with client memory without hard-coded counts.
 - **Awards & Winners Recognition:** Award projects (1st Place Champion, 2nd Place, 3rd Place, Innovation Award, Best Mechanism) with instant public showcase podium and badges.
 - **Project Status Tracking:** Mark projects as `Available`, `In Progress`, `Completed`, or `Exhibited`.
 - **Exhibition Booths:** Assign physical table and booth numbers for fair setup.

@@ -184,6 +184,18 @@ app.post('/admin/api/projects/add', requireAdminAuth, (req, res) => {
   });
 });
 
+// General photo upload API for new projects or general uploads (Protected)
+app.post('/admin/api/upload-image', requireAdminAuth, upload.single('photo'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: 'No image file uploaded' });
+  }
+  const imageUrl = `/uploads/${req.file.filename}`;
+  res.json({
+    success: true,
+    imageUrl: imageUrl
+  });
+});
+
 // Upload project image photo when ready (Protected)
 app.post('/admin/api/projects/:id/upload-image', requireAdminAuth, upload.single('photo'), (req, res) => {
   if (!req.file) {

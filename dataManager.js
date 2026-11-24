@@ -97,6 +97,7 @@ function getAllModels() {
       award: award,
       isWinner: award !== 'None',
       image: s.image || m.image,
+      videoUrl: s.videoUrl !== undefined ? s.videoUrl : (m.videoUrl || ''),
       isCustom: false
     };
   });
@@ -118,6 +119,7 @@ function getAllModels() {
       award: award,
       isWinner: award !== 'None',
       image: s.image || m.image || '/images/default-project.svg',
+      videoUrl: s.videoUrl !== undefined ? s.videoUrl : (m.videoUrl || ''),
       isCustom: true
     };
   });
@@ -161,6 +163,7 @@ function addModel(data) {
     realWorldApp: data.realWorldApp ? data.realWorldApp.trim() : 'Practical application in modern STEM engineering and industry.',
     howItWorks: data.howItWorks ? data.howItWorks.trim() : concept,
     image: data.image && data.image.trim() !== '' ? data.image.trim() : '/images/default-project.svg',
+    videoUrl: data.videoUrl ? data.videoUrl.trim() : '',
     materials: materialsArray,
     rawMaterials: rawMaterials,
     speech: data.speech ? data.speech.trim() : `Good morning. This working model demonstrates ${concept}. When activated, the mechanism converts input energy to produce an observable scientific result. This principle is utilized across modern science and technology.`,
@@ -184,7 +187,8 @@ function addModel(data) {
     submissionDate: data.submissionDate ? data.submissionDate.trim() : '',
     notes: data.notes ? data.notes.trim() : '',
     award: award,
-    image: newProject.image
+    image: newProject.image,
+    videoUrl: newProject.videoUrl
   };
 
   saveStateData(stateCache);
@@ -211,6 +215,7 @@ function updateModel(id, updates) {
   if (updates.notes !== undefined) stateCache.states[numId].notes = String(updates.notes).trim();
   if (updates.award !== undefined) stateCache.states[numId].award = String(updates.award).trim();
   if (updates.image !== undefined) stateCache.states[numId].image = String(updates.image).trim();
+  if (updates.videoUrl !== undefined) stateCache.states[numId].videoUrl = String(updates.videoUrl).trim();
 
   // If custom project, allow updating metadata
   const customIdx = (stateCache.customProjects || []).findIndex(m => m.id === numId);
@@ -224,6 +229,7 @@ function updateModel(id, updates) {
     if (updates.realWorldApp) cp.realWorldApp = updates.realWorldApp.trim();
     if (updates.howItWorks) cp.howItWorks = updates.howItWorks.trim();
     if (updates.image) cp.image = updates.image.trim();
+    if (updates.videoUrl !== undefined) cp.videoUrl = updates.videoUrl.trim();
     if (updates.speech) cp.speech = updates.speech.trim();
     if (updates.award !== undefined) cp.award = updates.award.trim();
     if (updates.assignedStudents !== undefined || updates.assignedStudent !== undefined) {

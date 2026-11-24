@@ -313,6 +313,17 @@ html(lang="en")
                     //- Action Buttons
                     td(class="py-3 px-4 text-right")
                       div(class="flex items-center justify-end space-x-1.5")
+                        template(x-if="model.videoUrl")
+                          a(
+                            :href="model.videoUrl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="p-1.5 rounded-xl bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/30 text-xs transition inline-flex items-center"
+                            title="Open YouTube Video Demonstration"
+                          )
+                            svg(class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24")
+                              path(d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z")
+
                         button(
                           @click="openEditModal(model)"
                           class="px-2.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-medium transition inline-flex items-center space-x-1"
@@ -457,8 +468,8 @@ html(lang="en")
                       option(value="Innovation Award") 🌟 Innovation Award
                       option(value="Best Working Mechanism") ⚙️ Best Working Mechanism
 
-                //- Target Date & Notes
-                div(class="grid grid-cols-1 sm:grid-cols-2 gap-4")
+                //- Target Date, Image URL & Video Link
+                div(class="grid grid-cols-1 sm:grid-cols-3 gap-3")
                   div(class="space-y-1.5")
                     label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
                       | Target / Submission Date
@@ -470,12 +481,23 @@ html(lang="en")
 
                   div(class="space-y-1.5")
                     label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                      | Image URL / Path (Manual override)
+                      | Image URL / Path
                     input(
                       type="text"
                       x-model="editForm.image"
                       placeholder="e.g. /images/... or /uploads/..."
                       class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                    )
+
+                  div(class="space-y-1.5")
+                    label(class="block font-mono uppercase tracking-wider text-red-400 font-semibold flex items-center space-x-1")
+                      span YouTube Video
+                      span(class="text-[10px] text-slate-400 font-normal") (Optional)
+                    input(
+                      type="url"
+                      x-model="editForm.videoUrl"
+                      placeholder="https://youtu.be/..."
+                      class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
                     )
 
                 div(class="space-y-1.5")
@@ -574,7 +596,7 @@ html(lang="en")
                   class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
                 )
 
-              div(class="grid grid-cols-1 sm:grid-cols-3 gap-3")
+              div(class="grid grid-cols-1 sm:grid-cols-2 gap-3")
                 div(class="space-y-1.5")
                   label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
                     | Difficulty
@@ -596,15 +618,50 @@ html(lang="en")
                     class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
                   )
 
-                div(class="space-y-1.5")
-                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                    | Image URL (Optional)
-                  input(
-                    type="text"
-                    x-model="addForm.image"
-                    placeholder="Leave blank for default"
-                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
-                  )
+              //- Photo File Upload & YouTube Link
+              div(class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3.5")
+                div(class="grid grid-cols-1 sm:grid-cols-2 gap-4")
+                  //- Direct Photo File Upload
+                  div(class="space-y-1.5")
+                    label(class="block font-mono uppercase tracking-wider text-cyan-400 font-bold")
+                      | Project Photo / Image
+                    div(class="flex items-center space-x-3")
+                      div(class="relative w-14 h-14 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden flex-shrink-0 flex items-center justify-center")
+                        template(x-if="addForm.image")
+                          img(:src="addForm.image" class="w-full h-full object-cover")
+                        template(x-if="!addForm.image")
+                          svg(class="w-6 h-6 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                            rect(width="18" height="18" x="3" y="3" rx="2" ry="2")
+                            circle(cx="9" cy="9" r="2")
+                            path(d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21")
+                      div(class="flex-1 space-y-1.5")
+                        label(class="cursor-pointer inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-semibold transition")
+                          input(type="file" accept="image/*" class="hidden" @change="uploadNewProjectPhoto($event)")
+                          svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                            path(d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4")
+                            polyline(points="17 8 12 3 7 8")
+                            line(x1="12" y1="12" x2="12" y2="3")
+                          span Upload Photo File
+                        input(
+                          type="text"
+                          x-model="addForm.image"
+                          placeholder="Or enter image URL / uploads path"
+                          class="w-full px-2.5 py-1 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white"
+                        )
+
+                  //- Optional YouTube Video Link
+                  div(class="space-y-1.5")
+                    label(class="block font-mono uppercase tracking-wider text-red-400 font-bold flex items-center space-x-1.5")
+                      svg(class="w-4 h-4 fill-current text-red-500" viewBox="0 0 24 24")
+                        path(d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z")
+                      span YouTube Video Link (Optional)
+                    p(class="text-[11px] text-slate-400") Add a video demonstration link for visitors to watch on YouTube.
+                    input(
+                      type="url"
+                      x-model="addForm.videoUrl"
+                      placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                      class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                    )
 
               div(class="grid grid-cols-1 sm:grid-cols-2 gap-3")
                 div(class="space-y-1.5")
@@ -720,7 +777,8 @@ html(lang="en")
             boothNumber: '',
             submissionDate: '',
             notes: '',
-            image: ''
+            image: '',
+            videoUrl: ''
           },
 
           addForm: {
@@ -734,6 +792,7 @@ html(lang="en")
             materials: '',
             speech: '',
             image: '',
+            videoUrl: '',
             assignedStudents: '',
             studentRoll: '',
             status: 'Available',
@@ -809,7 +868,8 @@ html(lang="en")
               boothNumber: model.boothNumber || '',
               submissionDate: model.submissionDate || '',
               notes: model.notes || '',
-              image: model.image || ''
+              image: model.image || '',
+              videoUrl: model.videoUrl || ''
             };
           },
 
@@ -846,6 +906,30 @@ html(lang="en")
             }
           },
 
+          async uploadNewProjectPhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('photo', file);
+
+            try {
+              this.showToast('Uploading photo...');
+              const res = await fetch('/admin/api/upload-image', {
+                method: 'POST',
+                body: formData
+              });
+
+              if (!res.ok) throw new Error('Upload failed');
+              const data = await res.json();
+
+              this.addForm.image = data.imageUrl;
+              this.showToast('Photo uploaded and ready for project!');
+            } catch (err) {
+              alert('Error uploading photo: ' + err.message);
+            }
+          },
+
           async saveProjectChanges() {
             if (!this.editingModel) return;
             this.isSaving = true;
@@ -858,7 +942,8 @@ html(lang="en")
               boothNumber: this.editForm.boothNumber,
               submissionDate: this.editForm.submissionDate,
               notes: this.editForm.notes,
-              image: this.editForm.image
+              image: this.editForm.image,
+              videoUrl: this.editForm.videoUrl
             };
 
             try {
@@ -898,6 +983,7 @@ html(lang="en")
               materials: '',
               speech: '',
               image: '',
+              videoUrl: '',
               assignedStudents: '',
               studentRoll: '',
               status: 'Available',
