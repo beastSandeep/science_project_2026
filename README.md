@@ -2,7 +2,17 @@
 
 A modern, responsive, and minimalist web portal showcasing **20 practical working science models** designed for science exhibitions, fairs, and STEM demonstrations.
 
+Created and owned by **Sandeep Singh** ([@beastSandeep](https://github.com/beastSandeep)).
+
 Each model includes its core scientific principles, required materials, working mechanisms, real-world industry applications, and ready-to-recite presentation scripts.
+
+---
+
+## 👤 Website Owner & Creator
+
+**Sandeep Singh**  
+- **GitHub:** [@beastSandeep](https://github.com/beastSandeep)  
+- **Repository:** [https://github.com/beastSandeep/science_project_2026.git](https://github.com/beastSandeep/science_project_2026.git)
 
 ---
 

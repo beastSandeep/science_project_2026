@@ -2,6 +2,7 @@
   "name": "science-fair-portal",
   "version": "1.0.0",
   "description": "Science Fair 20 Models Student Portal",
+  "author": "Sandeep Singh",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
