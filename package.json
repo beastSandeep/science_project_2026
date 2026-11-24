@@ -1,0 +1,14 @@
+{
+  "name": "science-fair-portal",
+  "version": "1.0.0",
+  "description": "Science Fair 20 Models Student Portal",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js --dev"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pug": "^3.0.3"
+  }
+}
