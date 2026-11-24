@@ -63,6 +63,23 @@ Open [http://localhost:3000](http://localhost:3000) in your web browser.
 
 ---
 
+## 🔐 Admin Portal & Project Management
+
+The portal includes an administrative management console for event coordinators and teachers:
+
+- **URL:** [http://localhost:3000/admin](http://localhost:3000/admin)
+- **Username:** `admin`
+- **Password:** `Sandeep80055`
+
+### Admin Features
+- **Student Assignment:** Assign and submit models to students with contact/roll info.
+- **Project Status Tracking:** Mark projects as `Available`, `In Progress`, `Completed`, or `Exhibited`.
+- **Exhibition Booths:** Assign physical table and booth numbers for fair setup.
+- **Coordinator Notes:** Internal evaluation and setup remarks.
+- **Roster Export:** One-click CSV roster export for official records.
+
+---
+
 ## 📁 Project Structure
 
 ```

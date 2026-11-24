@@ -9,6 +9,7 @@
     "dev": "node --watch server.js --dev"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "express": "^4.21.2",
     "pug": "^3.0.3"
   }
