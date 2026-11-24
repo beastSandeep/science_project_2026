@@ -1,162 +1,165 @@
 {
-  "1": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 01",
-    "submissionDate": "",
-    "notes": ""
+  "states": {
+    "1": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 01",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "2": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 02",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "3": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 03",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "4": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 04",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "5": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 05",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "6": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 06",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "7": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 07",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "8": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 08",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "9": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 09",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "10": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 10",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "11": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 11",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "12": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 12",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "13": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 13",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "14": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 14",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "15": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 15",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "16": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 16",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "17": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 17",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "18": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 18",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "19": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 19",
+      "submissionDate": "",
+      "notes": ""
+    },
+    "20": {
+      "assignedStudent": "",
+      "studentRoll": "",
+      "status": "Available",
+      "boothNumber": "Table 20",
+      "submissionDate": "",
+      "notes": ""
+    }
   },
-  "2": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 02",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "3": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 03",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "4": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 04",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "5": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 05",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "6": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 06",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "7": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 07",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "8": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 08",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "9": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 09",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "10": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 10",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "11": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 11",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "12": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 12",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "13": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 13",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "14": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 14",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "15": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 15",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "16": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 16",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "17": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 17",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "18": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 18",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "19": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 19",
-    "submissionDate": "",
-    "notes": ""
-  },
-  "20": {
-    "assignedStudent": "",
-    "studentRoll": "",
-    "status": "Available",
-    "boothNumber": "Table 20",
-    "submissionDate": "",
-    "notes": ""
-  }
+  "customProjects": []
 }

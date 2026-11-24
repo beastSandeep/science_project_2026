@@ -131,6 +131,17 @@ app.get('/admin', requireAdminAuth, (req, res) => {
   });
 });
 
+// Add new project API (Protected)
+app.post('/admin/api/projects/add', requireAdminAuth, (req, res) => {
+  const newProject = dataManager.addModel(req.body);
+  const updatedStats = dataManager.getStats();
+  res.json({
+    success: true,
+    project: newProject,
+    stats: updatedStats
+  });
+});
+
 // Update project assignment & status API (Protected)
 app.post('/admin/api/projects/:id', requireAdminAuth, (req, res) => {
   const { id } = req.params;
@@ -139,6 +150,17 @@ app.post('/admin/api/projects/:id', requireAdminAuth, (req, res) => {
   res.json({
     success: true,
     project: updatedProject,
+    stats: updatedStats
+  });
+});
+
+// Delete custom project API (Protected)
+app.delete('/admin/api/projects/:id', requireAdminAuth, (req, res) => {
+  const { id } = req.params;
+  const result = dataManager.deleteModel(id);
+  const updatedStats = dataManager.getStats();
+  res.json({
+    success: result.success,
     stats: updatedStats
   });
 });

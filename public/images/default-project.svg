@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="cyanAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+    <linearGradient id="violetAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="500" fill="url(#bg)"/>
+
+  <!-- Subtle grid lines -->
+  <g stroke="#1e293b" stroke-width="1" opacity="0.4">
+    <line x1="0" y1="100" x2="800" y2="100"/>
+    <line x1="0" y1="200" x2="800" y2="200"/>
+    <line x1="0" y1="300" x2="800" y2="300"/>
+    <line x1="0" y1="400" x2="800" y2="400"/>
+    <line x1="200" y1="0" x2="200" y2="500"/>
+    <line x1="400" y1="0" x2="400" y2="500"/>
+    <line x1="600" y1="0" x2="600" y2="500"/>
+  </g>
+
+  <!-- Decorative Orbiting Atom -->
+  <g transform="translate(400, 210)" filter="url(#glow)">
+    <ellipse cx="0" cy="0" rx="140" ry="50" fill="none" stroke="url(#cyanAccent)" stroke-width="3" transform="rotate(-30)" opacity="0.85"/>
+    <ellipse cx="0" cy="0" rx="140" ry="50" fill="none" stroke="url(#violetAccent)" stroke-width="3" transform="rotate(30)" opacity="0.85"/>
+    <ellipse cx="0" cy="0" rx="140" ry="50" fill="none" stroke="#38bdf8" stroke-width="2.5" transform="rotate(90)" opacity="0.7"/>
+
+    <circle cx="110" cy="-60" r="6" fill="#22d3ee"/>
+    <circle cx="-110" cy="-60" r="6" fill="#c084fc"/>
+    <circle cx="0" cy="140" r="5" fill="#38bdf8"/>
+
+    <!-- Central core -->
+    <circle cx="0" cy="0" r="22" fill="#0891b2" opacity="0.5"/>
+    <circle cx="0" cy="0" r="14" fill="#22d3ee"/>
+    <circle cx="-4" cy="-4" r="4" fill="#ffffff"/>
+  </g>
+
+  <!-- Text elements -->
+  <text x="400" y="380" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="bold" fill="#ffffff" text-anchor="middle" letter-spacing="1">
+    SCIENCE FAIR WORKING MODEL
+  </text>
+  <text x="400" y="420" font-family="ui-monospace, monospace" font-size="14" fill="#94a3b8" text-anchor="middle" letter-spacing="2">
+    HANDS-ON STEM EXHIBITION PROJECT
+  </text>
+</svg>

@@ -84,6 +84,16 @@ html(lang="en")
 
           //- Top Controls
           div(class="flex items-center space-x-2 sm:space-x-3")
+            //- Add New Project Button
+            button(
+              @click="openAddModal()"
+              class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition flex items-center space-x-1.5"
+            )
+              svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5")
+                line(x1="12" y1="5" x2="12" y2="19")
+                line(x1="5" y1="12" x2="19" y2="12")
+              span Add Project
+
             a(
               href="/admin/api/export-csv"
               class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-600 text-xs text-slate-200 hover:text-white transition flex items-center space-x-1.5"
@@ -141,7 +151,7 @@ html(lang="en")
           div(class="glass-panel rounded-2xl p-4 border border-cyan-500/30 space-y-1 bg-cyan-950/10")
             div(class="text-[11px] font-mono uppercase tracking-wider text-cyan-400") Assigned
             div(class="text-2xl font-extrabold text-cyan-300 font-mono" x-text="stats.assigned")
-            div(class="text-[10px] text-cyan-400/80 font-mono" x-text="Math.round((stats.assigned / stats.total) * 100) + '% assigned'")
+            div(class="text-[10px] text-cyan-400/80 font-mono" x-text="stats.total > 0 ? Math.round((stats.assigned / stats.total) * 100) + '% assigned' : '0%'")
 
           //- In Progress
           div(class="glass-panel rounded-2xl p-4 border border-blue-500/30 space-y-1 bg-blue-950/10")
@@ -209,7 +219,7 @@ html(lang="en")
             div(class="text-xs font-mono text-slate-400")
               | Displaying 
               span(class="text-cyan-400 font-semibold" x-text="filteredModels().length")
-              |  of 20 projects
+              |  of <span x-text="models.length"></span> projects
 
         //- Projects Table / List
         div(class="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-xl")
@@ -230,11 +240,13 @@ html(lang="en")
                     td(class="py-3 px-4")
                       div(class="flex items-center space-x-3")
                         div(class="w-12 h-12 rounded-lg bg-slate-950 overflow-hidden flex-shrink-0 border border-slate-800")
-                          img(:src="model.image" :alt="model.title" class="w-full h-full object-cover")
+                          img(:src="model.image" :alt="model.title" class="w-full h-full object-cover" onerror="this.src='/images/default-project.svg'")
                         div
                           div(class="flex items-center space-x-1.5")
                             span(class="font-mono text-cyan-400 font-bold") #<span x-text="model.id < 10 ? '0' + model.id : model.id"></span>
                             span(class="font-bold text-white text-sm group-hover:text-cyan-300 transition" x-text="model.title")
+                            template(x-if="model.isCustom")
+                              span(class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-violet-500/20 text-violet-300 border border-violet-500/30 font-semibold") Custom
                           p(class="text-[11px] text-slate-400 line-clamp-1 max-w-xs" x-text="model.concept")
 
                     //- Category
@@ -266,15 +278,28 @@ html(lang="en")
                     td(class="py-3 px-4 font-mono text-slate-300")
                       span(x-text="model.boothNumber || 'Unassigned'")
 
-                    //- Edit Button
+                    //- Action Buttons
                     td(class="py-3 px-4 text-right")
-                      button(
-                        @click="openEditModal(model)"
-                        class="px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-medium transition inline-flex items-center space-x-1"
-                      )
-                        svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
-                          path(d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z")
-                        span Edit
+                      div(class="flex items-center justify-end space-x-1.5")
+                        button(
+                          @click="openEditModal(model)"
+                          class="px-2.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-medium transition inline-flex items-center space-x-1"
+                          title="Edit Student Assignment & Status"
+                        )
+                          svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                            path(d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z")
+                          span Edit
+
+                        template(x-if="model.isCustom")
+                          button(
+                            @click="deleteCustomProject(model.id, model.title)"
+                            class="p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs transition"
+                            title="Delete Custom Project"
+                          )
+                            svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                              path(d="M3 6h18")
+                              path(d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6")
+                              path(d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2")
 
         //- Edit Assignment & Status Modal
         div(
@@ -393,6 +418,204 @@ html(lang="en")
                   template(x-if="!isSaving")
                     span Save Project Assignment
 
+        //- Add New Project Modal
+        div(
+          x-show="isAddingProject"
+          x-transition
+          class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/85 backdrop-blur-md overflow-y-auto"
+          @keydown.escape.window="closeAddModal()"
+        )
+          div(
+            x-show="isAddingProject"
+            @click.outside="closeAddModal()"
+            class="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
+          )
+            //- Add Modal Header
+            div(class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/70")
+              div(class="flex items-center space-x-2.5")
+                div(class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400")
+                  svg(class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5")
+                    line(x1="12" y1="5" x2="12" y2="19")
+                    line(x1="5" y1="12" x2="19" y2="12")
+                div
+                  h2(class="text-base sm:text-lg font-bold text-white tracking-tight") Add New Science Project
+                  p(class="text-xs text-slate-400") Create a new model to feature on the portal
+              
+              button(
+                @click="closeAddModal()"
+                class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition"
+              )
+                svg(class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                  path(d="M18 6 6 18")
+                  path(d="m6 6 12 12")
+
+            //- Add Modal Form
+            form(@submit.prevent="submitAddProject()" class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs")
+              
+              //- Row 1: Title & Category
+              div(class="grid grid-cols-1 sm:grid-cols-3 gap-3")
+                div(class="sm:col-span-2 space-y-1.5")
+                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                    | Project Title <span class="text-rose-400">*</span>
+                  input(
+                    type="text"
+                    required
+                    x-model="addForm.title"
+                    placeholder="e.g. Smart Solar Water Purifier"
+                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                  )
+                div(class="space-y-1.5")
+                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                    | Discipline
+                  select(
+                    x-model="addForm.category"
+                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                  )
+                    option(value="Physics") Physics
+                    option(value="Mechanics") Mechanics
+                    option(value="Electricity") Electricity
+                    option(value="Optics") Optics
+                    option(value="Biology") Biology
+                    option(value="Chemistry") Chemistry
+                    option(value="Earth & Space") Earth & Space
+
+              //- Row 2: Concept
+              div(class="space-y-1.5")
+                label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                  | Scientific Principle / Core Concept <span class="text-rose-400">*</span>
+                input(
+                  type="text"
+                  required
+                  x-model="addForm.concept"
+                  placeholder="e.g. Solar thermal distillation and capillary filtration"
+                  class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                )
+
+              //- Row 3: Difficulty & Build Time & Image
+              div(class="grid grid-cols-1 sm:grid-cols-3 gap-3")
+                div(class="space-y-1.5")
+                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                    | Difficulty
+                  select(
+                    x-model="addForm.difficulty"
+                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                  )
+                    option(value="Beginner") Beginner
+                    option(value="Intermediate") Intermediate
+                    option(value="Advanced") Advanced
+
+                div(class="space-y-1.5")
+                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                    | Estimated Build Time
+                  input(
+                    type="text"
+                    x-model="addForm.buildTime"
+                    placeholder="e.g. 2 hours"
+                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                  )
+
+                div(class="space-y-1.5")
+                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                    | Image URL (Optional)
+                  input(
+                    type="text"
+                    x-model="addForm.image"
+                    placeholder="Leave blank for default"
+                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                  )
+
+              //- Row 4: How It Works & Real World App
+              div(class="grid grid-cols-1 sm:grid-cols-2 gap-3")
+                div(class="space-y-1.5")
+                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                    | Working Mechanism (How It Works)
+                  textarea(
+                    rows="2"
+                    x-model="addForm.howItWorks"
+                    placeholder="Explain step-by-step physical or chemical operation..."
+                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                  )
+                div(class="space-y-1.5")
+                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                    | Real-World Applications
+                  textarea(
+                    rows="2"
+                    x-model="addForm.realWorldApp"
+                    placeholder="Where this technology is used in modern industry..."
+                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                  )
+
+              //- Row 5: Required Materials
+              div(class="space-y-1.5")
+                label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                  | Required Materials (separated by semicolons or new lines)
+                textarea(
+                  rows="2"
+                  x-model="addForm.materials"
+                  placeholder="Cardboard base; Solar cell; Syringe; Connecting wires; LED indicator"
+                  class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                )
+
+              //- Row 6: Presentation Speech
+              div(class="space-y-1.5")
+                label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                  | Presentation Script (Say this at the fair)
+                textarea(
+                  rows="2"
+                  x-model="addForm.speech"
+                  placeholder="Good morning. This working model demonstrates..."
+                  class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                )
+
+              //- Row 7: Initial Assignment (Optional)
+              div(class="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800 space-y-3")
+                div(class="text-[11px] font-mono uppercase tracking-wider text-cyan-400 font-bold")
+                  | Initial Student Assignment (Optional)
+                div(class="grid grid-cols-1 sm:grid-cols-3 gap-3")
+                  div(class="space-y-1")
+                    label(class="block text-[10px] font-mono uppercase text-slate-400") Student Name
+                    input(
+                      type="text"
+                      x-model="addForm.assignedStudent"
+                      placeholder="e.g. Sneha Reddy"
+                      class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white"
+                    )
+                  div(class="space-y-1")
+                    label(class="block text-[10px] font-mono uppercase text-slate-400") Roll / Contact
+                    input(
+                      type="text"
+                      x-model="addForm.studentRoll"
+                      placeholder="e.g. Roll 22"
+                      class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white"
+                    )
+                  div(class="space-y-1")
+                    label(class="block text-[10px] font-mono uppercase text-slate-400") Status
+                    select(
+                      x-model="addForm.status"
+                      class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white"
+                    )
+                      option(value="Available") Available
+                      option(value="In Progress") In Progress
+                      option(value="Completed") Completed
+                      option(value="Exhibited") Exhibited
+
+              //- Submit Button
+              div(class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-2")
+                button(
+                  type="button"
+                  @click="closeAddModal()"
+                  class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
+                ) Cancel
+                button(
+                  type="submit"
+                  :disabled="isSaving"
+                  class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 text-xs font-bold transition flex items-center space-x-1.5 shadow-lg shadow-cyan-500/20"
+                )
+                  template(x-if="isSaving")
+                    span Creating...
+                  template(x-if="!isSaving")
+                    span Create &amp; Publish Project
+
     //- Embedded Alpine Store
     script.
       const initialModels = !{JSON.stringify(models)};
@@ -406,6 +629,7 @@ html(lang="en")
           selectedStatus: 'All',
           selectedCategory: 'All',
           editingModel: null,
+          isAddingProject: false,
           isSaving: false,
           toastMessage: '',
           categories: ['All', 'Physics', 'Mechanics', 'Electricity', 'Optics', 'Biology', 'Chemistry', 'Earth & Space'],
@@ -418,6 +642,23 @@ html(lang="en")
             boothNumber: '',
             submissionDate: '',
             notes: ''
+          },
+
+          addForm: {
+            title: '',
+            category: 'Physics',
+            concept: '',
+            difficulty: 'Beginner',
+            buildTime: '2 hours',
+            realWorldApp: '',
+            howItWorks: '',
+            materials: '',
+            speech: '',
+            image: '',
+            assignedStudent: '',
+            studentRoll: '',
+            status: 'Available',
+            boothNumber: ''
           },
 
           filteredModels() {
@@ -466,6 +707,54 @@ html(lang="en")
             this.editingModel = null;
           },
 
+          openAddModal() {
+            this.addForm = {
+              title: '',
+              category: 'Physics',
+              concept: '',
+              difficulty: 'Beginner',
+              buildTime: '2 hours',
+              realWorldApp: '',
+              howItWorks: '',
+              materials: '',
+              speech: '',
+              image: '',
+              assignedStudent: '',
+              studentRoll: '',
+              status: 'Available',
+              boothNumber: `Table ${this.models.length + 1}`
+            };
+            this.isAddingProject = true;
+          },
+
+          closeAddModal() {
+            this.isAddingProject = false;
+          },
+
+          async submitAddProject() {
+            this.isSaving = true;
+            try {
+              const res = await fetch('/admin/api/projects/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(this.addForm)
+              });
+
+              if (!res.ok) throw new Error('Failed to create project');
+              const data = await res.json();
+
+              this.models.push(data.project);
+              this.stats = data.stats;
+
+              this.showToast(`Created Model #${data.project.id}: "${data.project.title}"`);
+              this.closeAddModal();
+            } catch (err) {
+              alert('Error creating project: ' + err.message);
+            } finally {
+              this.isSaving = false;
+            }
+          },
+
           async saveProjectChanges() {
             if (!this.editingModel) return;
             this.isSaving = true;
@@ -493,6 +782,27 @@ html(lang="en")
               alert('Error saving project changes: ' + err.message);
             } finally {
               this.isSaving = false;
+            }
+          },
+
+          async deleteCustomProject(id, title) {
+            if (!confirm(`Are you sure you want to delete custom model #${id} ("${title}")?`)) {
+              return;
+            }
+
+            try {
+              const res = await fetch(`/admin/api/projects/${id}`, {
+                method: 'DELETE'
+              });
+
+              if (!res.ok) throw new Error('Delete failed');
+              const data = await res.json();
+
+              this.models = this.models.filter(m => m.id !== id);
+              this.stats = data.stats;
+              this.showToast(`Deleted Model #${id}`);
+            } catch (err) {
+              alert('Error deleting project: ' + err.message);
             }
           },
 
