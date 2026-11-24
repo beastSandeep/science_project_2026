@@ -6,7 +6,9 @@
       "status": "Available",
       "boothNumber": "Table 01",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "2": {
       "assignedStudent": "",
@@ -14,7 +16,9 @@
       "status": "Available",
       "boothNumber": "Table 02",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "3": {
       "assignedStudent": "",
@@ -22,7 +26,9 @@
       "status": "Available",
       "boothNumber": "Table 03",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "4": {
       "assignedStudent": "",
@@ -30,7 +36,9 @@
       "status": "Available",
       "boothNumber": "Table 04",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "5": {
       "assignedStudent": "",
@@ -38,7 +46,9 @@
       "status": "Available",
       "boothNumber": "Table 05",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "6": {
       "assignedStudent": "",
@@ -46,7 +56,9 @@
       "status": "Available",
       "boothNumber": "Table 06",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "7": {
       "assignedStudent": "",
@@ -54,7 +66,9 @@
       "status": "Available",
       "boothNumber": "Table 07",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "8": {
       "assignedStudent": "",
@@ -62,7 +76,9 @@
       "status": "Available",
       "boothNumber": "Table 08",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "9": {
       "assignedStudent": "",
@@ -70,7 +86,9 @@
       "status": "Available",
       "boothNumber": "Table 09",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "10": {
       "assignedStudent": "",
@@ -78,7 +96,9 @@
       "status": "Available",
       "boothNumber": "Table 10",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "11": {
       "assignedStudent": "",
@@ -86,7 +106,9 @@
       "status": "Available",
       "boothNumber": "Table 11",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "12": {
       "assignedStudent": "",
@@ -94,7 +116,9 @@
       "status": "Available",
       "boothNumber": "Table 12",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "13": {
       "assignedStudent": "",
@@ -102,7 +126,9 @@
       "status": "Available",
       "boothNumber": "Table 13",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "14": {
       "assignedStudent": "",
@@ -110,7 +136,9 @@
       "status": "Available",
       "boothNumber": "Table 14",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "15": {
       "assignedStudent": "",
@@ -118,7 +146,9 @@
       "status": "Available",
       "boothNumber": "Table 15",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "16": {
       "assignedStudent": "",
@@ -126,7 +156,9 @@
       "status": "Available",
       "boothNumber": "Table 16",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "17": {
       "assignedStudent": "",
@@ -134,7 +166,9 @@
       "status": "Available",
       "boothNumber": "Table 17",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "18": {
       "assignedStudent": "",
@@ -142,7 +176,9 @@
       "status": "Available",
       "boothNumber": "Table 18",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "19": {
       "assignedStudent": "",
@@ -150,7 +186,9 @@
       "status": "Available",
       "boothNumber": "Table 19",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     },
     "20": {
       "assignedStudent": "",
@@ -158,7 +196,9 @@
       "status": "Available",
       "boothNumber": "Table 20",
       "submissionDate": "",
-      "notes": ""
+      "notes": "",
+      "assignedStudents": [],
+      "award": "None"
     }
   },
   "customProjects": []

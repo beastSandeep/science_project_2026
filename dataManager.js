@@ -16,7 +16,6 @@ function loadStateData() {
           customProjects: parsed.customProjects || []
         };
       } else {
-        // Migration from simple object
         return {
           states: parsed || {},
           customProjects: []
@@ -44,55 +43,81 @@ function saveStateData(data) {
 // Initial state cache
 let stateCache = loadStateData();
 
+// Helper to normalize students list
+function parseStudents(val) {
+  if (Array.isArray(val)) {
+    return val.map(s => String(s).trim()).filter(Boolean);
+  }
+  if (typeof val === 'string' && val.trim() !== '') {
+    return val.split(/[,\n;]+/).map(s => s.trim()).filter(Boolean);
+  }
+  return [];
+}
+
 // Initialize any missing base models in state
 baseData.models.forEach(m => {
   if (!stateCache.states[m.id]) {
     stateCache.states[m.id] = {
+      assignedStudents: [],
       assignedStudent: '',
       studentRoll: '',
       status: 'Available',
       boothNumber: `Table ${m.id < 10 ? '0' + m.id : m.id}`,
       submissionDate: '',
-      notes: ''
+      notes: '',
+      award: 'None' // None, 1st Place, 2nd Place, 3rd Place, Innovation Award, Best Mechanism
     };
+  } else {
+    // Migration: ensure assignedStudents array exists
+    if (!stateCache.states[m.id].assignedStudents) {
+      stateCache.states[m.id].assignedStudents = parseStudents(stateCache.states[m.id].assignedStudent);
+    }
+    if (!stateCache.states[m.id].award) {
+      stateCache.states[m.id].award = 'None';
+    }
   }
 });
 saveStateData(stateCache);
 
 function getAllModels() {
-  // 1. Process base 20 models
+  // 1. Process base models
   const baseModels = baseData.models.map(m => {
-    const s = stateCache.states[m.id] || {
-      assignedStudent: '',
-      studentRoll: '',
-      status: 'Available',
-      boothNumber: `Table ${m.id < 10 ? '0' + m.id : m.id}`,
-      submissionDate: '',
-      notes: ''
-    };
+    const s = stateCache.states[m.id] || {};
+    const students = parseStudents(s.assignedStudents || s.assignedStudent || '');
+    const award = s.award || 'None';
     return {
       ...m,
-      assignedStudent: s.assignedStudent || '',
+      assignedStudents: students,
+      assignedStudent: students.join(', '),
       studentRoll: s.studentRoll || '',
       status: s.status || 'Available',
       boothNumber: s.boothNumber || `Table ${m.id < 10 ? '0' + m.id : m.id}`,
       submissionDate: s.submissionDate || '',
       notes: s.notes || '',
+      award: award,
+      isWinner: award !== 'None',
+      image: s.image || m.image,
       isCustom: false
     };
   });
 
-  // 2. Process custom projects added by admin
+  // 2. Process custom models added by admin
   const customModels = (stateCache.customProjects || []).map(m => {
     const s = stateCache.states[m.id] || {};
+    const students = parseStudents(s.assignedStudents || s.assignedStudent || m.assignedStudents || m.assignedStudent || '');
+    const award = s.award || m.award || 'None';
     return {
       ...m,
-      assignedStudent: s.assignedStudent !== undefined ? s.assignedStudent : (m.assignedStudent || ''),
+      assignedStudents: students,
+      assignedStudent: students.join(', '),
       studentRoll: s.studentRoll !== undefined ? s.studentRoll : (m.studentRoll || ''),
       status: s.status !== undefined ? s.status : (m.status || 'Available'),
       boothNumber: s.boothNumber !== undefined ? s.boothNumber : (m.boothNumber || `Table ${m.id}`),
       submissionDate: s.submissionDate !== undefined ? s.submissionDate : (m.submissionDate || ''),
       notes: s.notes !== undefined ? s.notes : (m.notes || ''),
+      award: award,
+      isWinner: award !== 'None',
+      image: s.image || m.image || '/images/default-project.svg',
       isCustom: true
     };
   });
@@ -123,6 +148,8 @@ function addModel(data) {
 
   const rawMaterials = materialsArray.join('; ') + '.';
   const concept = data.concept ? data.concept.trim() : 'Applied scientific mechanism and observable principles.';
+  const students = parseStudents(data.assignedStudents || data.assignedStudent || '');
+  const award = data.award && data.award.trim() !== '' ? data.award.trim() : 'None';
 
   const newProject = {
     id: newId,
@@ -137,23 +164,27 @@ function addModel(data) {
     materials: materialsArray,
     rawMaterials: rawMaterials,
     speech: data.speech ? data.speech.trim() : `Good morning. This working model demonstrates ${concept}. When activated, the mechanism converts input energy to produce an observable scientific result. This principle is utilized across modern science and technology.`,
+    assignedStudents: students,
+    assignedStudent: students.join(', '),
+    award: award,
     isCustom: true
   };
 
-  // Add to customProjects array
   if (!stateCache.customProjects) {
     stateCache.customProjects = [];
   }
   stateCache.customProjects.push(newProject);
 
-  // Initialize state
   stateCache.states[newId] = {
-    assignedStudent: data.assignedStudent ? data.assignedStudent.trim() : '',
+    assignedStudents: students,
+    assignedStudent: students.join(', '),
     studentRoll: data.studentRoll ? data.studentRoll.trim() : '',
     status: data.status ? data.status.trim() : 'Available',
     boothNumber: data.boothNumber ? data.boothNumber.trim() : `Table ${newId < 10 ? '0' + newId : newId}`,
     submissionDate: data.submissionDate ? data.submissionDate.trim() : '',
-    notes: data.notes ? data.notes.trim() : ''
+    notes: data.notes ? data.notes.trim() : '',
+    award: award,
+    image: newProject.image
   };
 
   saveStateData(stateCache);
@@ -166,14 +197,22 @@ function updateModel(id, updates) {
     stateCache.states[numId] = {};
   }
 
-  if (updates.assignedStudent !== undefined) stateCache.states[numId].assignedStudent = updates.assignedStudent.trim();
-  if (updates.studentRoll !== undefined) stateCache.states[numId].studentRoll = updates.studentRoll.trim();
-  if (updates.status !== undefined) stateCache.states[numId].status = updates.status.trim();
-  if (updates.boothNumber !== undefined) stateCache.states[numId].boothNumber = updates.boothNumber.trim();
-  if (updates.submissionDate !== undefined) stateCache.states[numId].submissionDate = updates.submissionDate.trim();
-  if (updates.notes !== undefined) stateCache.states[numId].notes = updates.notes.trim();
+  // Handle multi-students
+  if (updates.assignedStudents !== undefined || updates.assignedStudent !== undefined) {
+    const students = parseStudents(updates.assignedStudents !== undefined ? updates.assignedStudents : updates.assignedStudent);
+    stateCache.states[numId].assignedStudents = students;
+    stateCache.states[numId].assignedStudent = students.join(', ');
+  }
 
-  // If custom project, allow updating metadata as well
+  if (updates.studentRoll !== undefined) stateCache.states[numId].studentRoll = String(updates.studentRoll).trim();
+  if (updates.status !== undefined) stateCache.states[numId].status = String(updates.status).trim();
+  if (updates.boothNumber !== undefined) stateCache.states[numId].boothNumber = String(updates.boothNumber).trim();
+  if (updates.submissionDate !== undefined) stateCache.states[numId].submissionDate = String(updates.submissionDate).trim();
+  if (updates.notes !== undefined) stateCache.states[numId].notes = String(updates.notes).trim();
+  if (updates.award !== undefined) stateCache.states[numId].award = String(updates.award).trim();
+  if (updates.image !== undefined) stateCache.states[numId].image = String(updates.image).trim();
+
+  // If custom project, allow updating metadata
   const customIdx = (stateCache.customProjects || []).findIndex(m => m.id === numId);
   if (customIdx !== -1) {
     const cp = stateCache.customProjects[customIdx];
@@ -186,6 +225,11 @@ function updateModel(id, updates) {
     if (updates.howItWorks) cp.howItWorks = updates.howItWorks.trim();
     if (updates.image) cp.image = updates.image.trim();
     if (updates.speech) cp.speech = updates.speech.trim();
+    if (updates.award !== undefined) cp.award = updates.award.trim();
+    if (updates.assignedStudents !== undefined || updates.assignedStudent !== undefined) {
+      cp.assignedStudents = stateCache.states[numId].assignedStudents;
+      cp.assignedStudent = stateCache.states[numId].assignedStudent;
+    }
     if (updates.materials) {
       if (Array.isArray(updates.materials)) {
         cp.materials = updates.materials.map(s => s.trim()).filter(Boolean);
@@ -194,6 +238,22 @@ function updateModel(id, updates) {
       }
       cp.rawMaterials = cp.materials.join('; ') + '.';
     }
+  }
+
+  saveStateData(stateCache);
+  return getModel(numId);
+}
+
+function updateProjectImage(id, imageUrl) {
+  const numId = parseInt(id);
+  if (!stateCache.states[numId]) {
+    stateCache.states[numId] = {};
+  }
+  stateCache.states[numId].image = imageUrl;
+
+  const customIdx = (stateCache.customProjects || []).findIndex(m => m.id === numId);
+  if (customIdx !== -1) {
+    stateCache.customProjects[customIdx].image = imageUrl;
   }
 
   saveStateData(stateCache);
@@ -220,30 +280,36 @@ function getStats() {
   let inProgress = 0;
   let completed = 0;
   let exhibited = 0;
+  let winners = 0;
 
   models.forEach(m => {
-    if (m.assignedStudent && m.assignedStudent.trim() !== '') {
+    if (m.assignedStudents && m.assignedStudents.length > 0) {
       assigned++;
     }
     if (m.status === 'Available') available++;
     else if (m.status === 'In Progress') inProgress++;
     else if (m.status === 'Completed') completed++;
     else if (m.status === 'Exhibited') exhibited++;
+
+    if (m.award && m.award !== 'None') {
+      winners++;
+    }
   });
 
-  return { total, assigned, available, inProgress, completed, exhibited };
+  return { total, assigned, available, inProgress, completed, exhibited, winners };
 }
 
 function generateCSV() {
   const models = getAllModels();
-  const header = ['ID', 'Title', 'Category', 'Difficulty', 'Status', 'Assigned Student', 'Roll / Class Info', 'Booth Number', 'Submission Date', 'Notes'];
+  const header = ['ID', 'Title', 'Category', 'Difficulty', 'Status', 'Award / Winner', 'Team Members', 'Roll / Class Info', 'Booth Number', 'Submission Date', 'Notes'];
   const rows = models.map(m => [
     m.id,
     `"${m.title.replace(/"/g, '""')}"`,
     `"${m.category}"`,
     `"${m.difficulty}"`,
     `"${m.status}"`,
-    `"${(m.assignedStudent || '').replace(/"/g, '""')}"`,
+    `"${m.award || 'None'}"`,
+    `"${(m.assignedStudents ? m.assignedStudents.join('; ') : '').replace(/"/g, '""')}"`,
     `"${(m.studentRoll || '').replace(/"/g, '""')}"`,
     `"${(m.boothNumber || '').replace(/"/g, '""')}"`,
     `"${(m.submissionDate || '').replace(/"/g, '""')}"`,
@@ -258,6 +324,7 @@ module.exports = {
   getModel,
   addModel,
   updateModel,
+  updateProjectImage,
   deleteModel,
   getStats,
   generateCSV,

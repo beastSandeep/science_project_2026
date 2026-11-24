@@ -1,8 +1,10 @@
 const express = require('express');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
+const multer = require('multer');
 const dataManager = require('./dataManager');
 
 const app = express();
@@ -23,6 +25,35 @@ const isDev = process.env.NODE_ENV === 'development' ||
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Multer storage for project photos when ready
+const uploadDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+    const cleanId = String(req.params.id || 'project').replace(/[^a-zA-Z0-9_-]/g, '');
+    cb(null, `model-${cleanId}-${Date.now()}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
+  fileFilter: (req, file, cb) => {
+    if (/image\/(jpeg|jpg|png|webp|gif)/i.test(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Please upload an image file (JPG, PNG, WEBP, GIF).'));
+    }
+  }
+});
 
 // Unlock Private Network Access (PNA) and CORS in development mode
 if (isDev) {
@@ -57,6 +88,17 @@ function requireAdminAuth(req, res, next) {
   const token = req.cookies.admin_session;
   if (token && token === EXPECTED_TOKEN) {
     return next();
+  }
+  // Also support Basic Auth (convenient for API calls and automated tools)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Basic ')) {
+    const creds = Buffer.from(authHeader.split(' ')[1], 'base64').toString('utf8').split(':');
+    if (creds[0] === ADMIN_USER && creds[1] === ADMIN_PASS) {
+      return next();
+    }
+  }
+  if (req.path.startsWith('/admin/api/')) {
+    return res.status(401).json({ success: false, error: 'Unauthorized: Admin session or credentials required.' });
   }
   return res.redirect('/admin/login');
 }
@@ -138,6 +180,24 @@ app.post('/admin/api/projects/add', requireAdminAuth, (req, res) => {
   res.json({
     success: true,
     project: newProject,
+    stats: updatedStats
+  });
+});
+
+// Upload project image photo when ready (Protected)
+app.post('/admin/api/projects/:id/upload-image', requireAdminAuth, upload.single('photo'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: 'No image file uploaded' });
+  }
+
+  const imageUrl = `/uploads/${req.file.filename}`;
+  const updatedProject = dataManager.updateProjectImage(req.params.id, imageUrl);
+  const updatedStats = dataManager.getStats();
+
+  res.json({
+    success: true,
+    imageUrl: imageUrl,
+    project: updatedProject,
     stats: updatedStats
   });
 });

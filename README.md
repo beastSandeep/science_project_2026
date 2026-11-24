@@ -72,11 +72,14 @@ The portal includes an administrative management console for event coordinators 
 - **Password:** `Sandeep80055`
 
 ### Admin Features
-- **Student Assignment:** Assign and submit models to students with contact/roll info.
+- **Add Custom Projects:** Add new models/projects to the exhibition directly from the Admin Portal.
+- **Multi-Student Team Assignment:** Assign single students or entire teams/groups to a single project.
+- **Photo Upload:** Upload real photos of the working project once built and ready for exhibition.
+- **Awards & Winners Recognition:** Award projects (1st Place Champion, 2nd Place, 3rd Place, Innovation Award, Best Mechanism) with instant public showcase podium and badges.
 - **Project Status Tracking:** Mark projects as `Available`, `In Progress`, `Completed`, or `Exhibited`.
 - **Exhibition Booths:** Assign physical table and booth numbers for fair setup.
 - **Coordinator Notes:** Internal evaluation and setup remarks.
-- **Roster Export:** One-click CSV roster export for official records.
+- **Roster Export:** One-click CSV roster export with team members and award recognitions for official records.
 
 ---
 

@@ -79,12 +79,11 @@ html(lang="en")
             div
               div(class="flex items-center space-x-2")
                 span(class="font-extrabold tracking-tight text-white text-sm sm:text-base") ADMIN PORTAL
-                span(class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-semibold") Management Console
+                span(class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-semibold") Team &amp; Winner Management
               p(class="text-[11px] text-slate-400 font-mono") Science Fair 2026 &bull; Owner: Sandeep Singh
 
           //- Top Controls
           div(class="flex items-center space-x-2 sm:space-x-3")
-            //- Add New Project Button
             button(
               @click="openAddModal()"
               class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition flex items-center space-x-1.5"
@@ -97,7 +96,7 @@ html(lang="en")
             a(
               href="/admin/api/export-csv"
               class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-600 text-xs text-slate-200 hover:text-white transition flex items-center space-x-1.5"
-              title="Download full project & student assignment roster"
+              title="Download full project & team assignment roster"
             )
               svg(class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
                 path(d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4")
@@ -140,36 +139,44 @@ html(lang="en")
           span(x-text="toastMessage")
 
         //- Stats Metric Cards
-        div(class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4")
+        div(class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5")
           //- Total
           div(class="glass-panel rounded-2xl p-4 border border-slate-800 space-y-1")
-            div(class="text-[11px] font-mono uppercase tracking-wider text-slate-400") Total Models
+            div(class="text-[10px] font-mono uppercase tracking-wider text-slate-400") Total Models
             div(class="text-2xl font-extrabold text-white font-mono" x-text="stats.total")
-            div(class="text-[10px] text-slate-500 font-mono") All STEM Exhibits
+            div(class="text-[10px] text-slate-500 font-mono") All Exhibits
 
           //- Assigned
           div(class="glass-panel rounded-2xl p-4 border border-cyan-500/30 space-y-1 bg-cyan-950/10")
-            div(class="text-[11px] font-mono uppercase tracking-wider text-cyan-400") Assigned
+            div(class="text-[10px] font-mono uppercase tracking-wider text-cyan-400") Assigned Teams
             div(class="text-2xl font-extrabold text-cyan-300 font-mono" x-text="stats.assigned")
             div(class="text-[10px] text-cyan-400/80 font-mono" x-text="stats.total > 0 ? Math.round((stats.assigned / stats.total) * 100) + '% assigned' : '0%'")
 
           //- In Progress
           div(class="glass-panel rounded-2xl p-4 border border-blue-500/30 space-y-1 bg-blue-950/10")
-            div(class="text-[11px] font-mono uppercase tracking-wider text-blue-400") In Progress
+            div(class="text-[10px] font-mono uppercase tracking-wider text-blue-400") In Progress
             div(class="text-2xl font-extrabold text-blue-300 font-mono" x-text="stats.inProgress")
             div(class="text-[10px] text-blue-400/80 font-mono") Under Assembly
 
           //- Completed
           div(class="glass-panel rounded-2xl p-4 border border-emerald-500/30 space-y-1 bg-emerald-950/10")
-            div(class="text-[11px] font-mono uppercase tracking-wider text-emerald-400") Completed
+            div(class="text-[10px] font-mono uppercase tracking-wider text-emerald-400") Completed
             div(class="text-2xl font-extrabold text-emerald-300 font-mono" x-text="stats.completed")
             div(class="text-[10px] text-emerald-400/80 font-mono") Ready for Fair
 
           //- Available
           div(class="glass-panel rounded-2xl p-4 border border-amber-500/30 space-y-1 bg-amber-950/10")
-            div(class="text-[11px] font-mono uppercase tracking-wider text-amber-400") Available
+            div(class="text-[10px] font-mono uppercase tracking-wider text-amber-400") Available
             div(class="text-2xl font-extrabold text-amber-300 font-mono" x-text="stats.available")
-            div(class="text-[10px] text-amber-400/80 font-mono") Needs Student
+            div(class="text-[10px] text-amber-400/80 font-mono") Needs Team
+
+          //- Winners
+          div(class="glass-panel rounded-2xl p-4 border border-yellow-500/40 space-y-1 bg-yellow-950/15 shadow-[0_0_20px_rgba(234,179,8,0.1)]")
+            div(class="text-[10px] font-mono uppercase tracking-wider text-yellow-400 flex items-center space-x-1")
+              span 🏆
+              span Winners
+            div(class="text-2xl font-extrabold text-yellow-300 font-mono" x-text="stats.winners || 0")
+            div(class="text-[10px] text-yellow-400/80 font-mono") Award Declared
 
         //- Filter & Management Controls
         div(class="glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 space-y-4")
@@ -183,7 +190,7 @@ html(lang="en")
               input(
                 type="text"
                 x-model="searchQuery"
-                placeholder="Search by model title, ID, assigned student name, or table number..."
+                placeholder="Search by title, student team names, roll, table, or award..."
                 class="w-full pl-10 pr-9 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition"
               )
               button(
@@ -204,6 +211,13 @@ html(lang="en")
                   class="px-3 py-1.5 rounded-lg text-xs transition whitespace-nowrap"
                   x-text="st === 'All' ? 'All Statuses' : st"
                 )
+              button(
+                @click="selectedStatus = 'WinnersOnly'"
+                :class="selectedStatus === 'WinnersOnly' ? 'bg-yellow-400 text-slate-950 font-bold shadow-sm' : 'text-yellow-400 hover:text-white'"
+                class="px-3 py-1.5 rounded-lg text-xs transition whitespace-nowrap flex items-center space-x-1"
+              )
+                span 🏆
+                span Winners
 
           //- Category Filter Row
           div(class="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-800/80")
@@ -230,17 +244,20 @@ html(lang="en")
                   th(class="py-3 px-4") Model
                   th(class="py-3 px-4") Discipline
                   th(class="py-3 px-4") Status
-                  th(class="py-3 px-4") Assigned Student
-                  th(class="py-3 px-4") Table / Booth
+                  th(class="py-3 px-4") Award / Winner
+                  th(class="py-3 px-4") Student Team
+                  th(class="py-3 px-4") Table #
                   th(class="py-3 px-4 text-right") Action
               tbody(class="divide-y divide-slate-800/80 font-sans")
                 template(x-for="model in filteredModels()" :key="model.id")
-                  tr(class="hover:bg-slate-900/40 transition group")
+                  tr(class="hover:bg-slate-900/40 transition group" :class="model.isWinner ? 'bg-yellow-950/10' : ''")
                     //- Model info + Image
                     td(class="py-3 px-4")
                       div(class="flex items-center space-x-3")
-                        div(class="w-12 h-12 rounded-lg bg-slate-950 overflow-hidden flex-shrink-0 border border-slate-800")
+                        div(class="w-12 h-12 rounded-lg bg-slate-950 overflow-hidden flex-shrink-0 border border-slate-800 relative")
                           img(:src="model.image" :alt="model.title" class="w-full h-full object-cover" onerror="this.src='/images/default-project.svg'")
+                          template(x-if="model.isWinner")
+                            div(class="absolute top-0 right-0 bg-yellow-500 text-slate-950 text-[10px] font-bold px-1 rounded-bl") 🏆
                         div
                           div(class="flex items-center space-x-1.5")
                             span(class="font-mono text-cyan-400 font-bold") #<span x-text="model.id < 10 ? '0' + model.id : model.id"></span>
@@ -262,17 +279,32 @@ html(lang="en")
                         span(class="w-1.5 h-1.5 rounded-full" :class="getStatusDotClass(model.status)")
                         span(x-text="model.status")
 
-                    //- Assigned Student
+                    //- Award Badge
                     td(class="py-3 px-4")
-                      template(x-if="model.assignedStudent && model.assignedStudent.trim() !== ''")
-                        div
-                          div(class="font-semibold text-white text-sm" x-text="model.assignedStudent")
-                          div(class="text-[11px] text-slate-400 font-mono" x-text="model.studentRoll || 'Roll info not set'")
-                      template(x-if="!model.assignedStudent || model.assignedStudent.trim() === ''")
+                      template(x-if="model.award && model.award !== 'None'")
+                        span(
+                          class="px-2.5 py-1 rounded-full text-[11px] font-mono font-bold border inline-flex items-center space-x-1"
+                          :class="getAwardBadgeClass(model.award)"
+                        )
+                          span(x-text="getAwardEmoji(model.award)")
+                          span(x-text="model.award")
+                      template(x-if="!model.award || model.award === 'None'")
+                        span(class="text-slate-500 font-mono text-[11px]") &mdash;
+
+                    //- Multi-Student Team
+                    td(class="py-3 px-4")
+                      template(x-if="model.assignedStudents && model.assignedStudents.length > 0")
+                        div(class="space-y-1")
+                          div(class="flex flex-wrap gap-1 items-center")
+                            template(x-for="(stu, sIdx) in model.assignedStudents" :key="sIdx")
+                              span(class="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-white font-medium text-xs")
+                                span(x-text="stu")
+                          div(class="text-[10px] text-slate-400 font-mono" x-text="model.studentRoll || 'Team of ' + model.assignedStudents.length")
+                      template(x-if="!model.assignedStudents || model.assignedStudents.length === 0")
                         button(
                           @click="openEditModal(model)"
                           class="px-2.5 py-1 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition font-mono text-[11px]"
-                        ) + Assign Student
+                        ) + Assign Team
 
                     //- Booth Number
                     td(class="py-3 px-4 font-mono text-slate-300")
@@ -284,7 +316,7 @@ html(lang="en")
                         button(
                           @click="openEditModal(model)"
                           class="px-2.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-medium transition inline-flex items-center space-x-1"
-                          title="Edit Student Assignment & Status"
+                          title="Edit Team, Image &amp; Award"
                         )
                           svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
                             path(d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z")
@@ -301,7 +333,7 @@ html(lang="en")
                               path(d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6")
                               path(d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2")
 
-        //- Edit Assignment & Status Modal
+        //- Edit Assignment, Photo & Award Modal
         div(
           x-show="editingModel !== null"
           x-transition
@@ -311,10 +343,10 @@ html(lang="en")
           div(
             x-show="editingModel !== null"
             @click.outside="closeEditModal()"
-            class="relative w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
+            class="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
           )
             //- Modal Header
-            div(class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60")
+            div(class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/70")
               div
                 div(class="flex items-center space-x-2")
                   span(class="font-mono text-xs px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold")
@@ -332,91 +364,146 @@ html(lang="en")
                   path(d="m6 6 12 12")
 
             //- Modal Body / Form
-            form(@submit.prevent="saveProjectChanges()" class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs")
-              
-              //- Student Name & Roll
-              div(class="grid grid-cols-1 sm:grid-cols-2 gap-4")
+            div(class="p-4 sm:p-6 overflow-y-auto space-y-5 text-xs")
+
+              //- Photo Upload Section
+              div(class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3")
+                div(class="flex items-center justify-between")
+                  div(class="flex items-center space-x-2 text-cyan-400 font-mono font-bold uppercase")
+                    svg(class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                      path(d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11")
+                      circle(cx="9" cy="9" r="2")
+                      path(d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21")
+                    span Project Photo (Upload When Built / Ready)
+                  span(class="text-[10px] text-slate-400") Max 15MB (JPG, PNG, WEBP)
+
+                div(class="flex flex-col sm:flex-row items-center gap-4")
+                  div(class="w-28 h-20 rounded-lg bg-slate-900 border border-slate-700 overflow-hidden flex-shrink-0")
+                    img(:src="editForm.image || editingModel?.image" class="w-full h-full object-cover" onerror="this.src='/images/default-project.svg'")
+                  
+                  div(class="flex-1 w-full space-y-1.5")
+                    label(class="block")
+                      input(
+                        type="file"
+                        accept="image/*"
+                        @change="uploadPhoto($event)"
+                        class="block w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/10 file:text-cyan-400 hover:file:bg-cyan-500/20 cursor-pointer"
+                      )
+                    p(class="text-[11px] text-slate-500") Upload real photo of the completed working model taken on phone or camera.
+
+              form(@submit.prevent="saveProjectChanges()" class="space-y-4")
+                
+                //- Multi-Student Team Members
+                div(class="space-y-1.5")
+                  div(class="flex items-center justify-between")
+                    label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                      | Assigned Student(s) / Team Members
+                    span(class="text-[10px] text-slate-400") Separate multiple students with commas or new lines
+                  textarea(
+                    rows="2"
+                    x-model="editForm.assignedStudentsText"
+                    placeholder="e.g. Rahul Sharma, Priya Verma, Amit Kumar"
+                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 font-sans"
+                  )
+
+                //- Student Roll & Booth
+                div(class="grid grid-cols-1 sm:grid-cols-2 gap-4")
+                  div(class="space-y-1.5")
+                    label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                      | Roll Numbers / Contact Info
+                    input(
+                      type="text"
+                      x-model="editForm.studentRoll"
+                      placeholder="e.g. Roll 12, 14, 15 / Sec B"
+                      class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                    )
+
+                  div(class="space-y-1.5")
+                    label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                      | Exhibition Table / Booth
+                    input(
+                      type="text"
+                      x-model="editForm.boothNumber"
+                      placeholder="e.g. Table 04, Row B"
+                      class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                    )
+
+                //- Status & Winner Award
+                div(class="grid grid-cols-1 sm:grid-cols-2 gap-4")
+                  div(class="space-y-1.5")
+                    label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                      | Project Status
+                    select(
+                      x-model="editForm.status"
+                      class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                    )
+                      option(value="Available") Available (Unassigned)
+                      option(value="In Progress") In Progress (Under Build)
+                      option(value="Completed") Completed (Verified)
+                      option(value="Exhibited") Exhibited (At Booth)
+
+                  div(class="space-y-1.5")
+                    label(class="block font-mono uppercase tracking-wider text-yellow-400 font-semibold flex items-center space-x-1")
+                      span 🏆
+                      span Award / Winner Recognition
+                    select(
+                      x-model="editForm.award"
+                      class="w-full px-3 py-2 bg-slate-950/90 border border-yellow-500/40 rounded-xl text-sm text-yellow-300 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
+                    )
+                      option(value="None") None (Standard Participant)
+                      option(value="1st Place - Grand Champion") 🥇 1st Place - Grand Champion
+                      option(value="2nd Place - Runner Up") 🥈 2nd Place - Runner Up
+                      option(value="3rd Place - Excellence Award") 🥉 3rd Place - Excellence Award
+                      option(value="Innovation Award") 🌟 Innovation Award
+                      option(value="Best Working Mechanism") ⚙️ Best Working Mechanism
+
+                //- Target Date & Notes
+                div(class="grid grid-cols-1 sm:grid-cols-2 gap-4")
+                  div(class="space-y-1.5")
+                    label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                      | Target / Submission Date
+                    input(
+                      type="date"
+                      x-model="editForm.submissionDate"
+                      class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                    )
+
+                  div(class="space-y-1.5")
+                    label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
+                      | Image URL / Path (Manual override)
+                    input(
+                      type="text"
+                      x-model="editForm.image"
+                      placeholder="e.g. /images/... or /uploads/..."
+                      class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                    )
+
                 div(class="space-y-1.5")
                   label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                    | Assigned Student Name
-                  input(
-                    type="text"
-                    x-model="editForm.assignedStudent"
-                    placeholder="e.g. Rahul Sharma"
+                    | Coordinator / Evaluation Notes
+                  textarea(
+                    rows="2"
+                    x-model="editForm.notes"
+                    placeholder="Add comments on materials needed, battery safety check, presentation rehearsals, etc."
                     class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
                   )
 
-                div(class="space-y-1.5")
-                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                    | Roll No. / Contact Info
-                  input(
-                    type="text"
-                    x-model="editForm.studentRoll"
-                    placeholder="e.g. Roll 14 / Sec A"
-                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                //- Modal Action Buttons
+                div(class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-2")
+                  button(
+                    type="button"
+                    @click="closeEditModal()"
+                    class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
+                  ) Cancel
+                  button(
+                    type="submit"
+                    :disabled="isSaving"
+                    class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 text-xs font-bold transition flex items-center space-x-1.5"
                   )
-
-              //- Project Status & Table Number
-              div(class="grid grid-cols-1 sm:grid-cols-2 gap-4")
-                div(class="space-y-1.5")
-                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                    | Project Status
-                  select(
-                    x-model="editForm.status"
-                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
-                  )
-                    option(value="Available") Available (Unassigned)
-                    option(value="In Progress") In Progress (Under Build)
-                    option(value="Completed") Completed (Verified)
-                    option(value="Exhibited") Exhibited (At Booth)
-
-                div(class="space-y-1.5")
-                  label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                    | Exhibition Table / Booth
-                  input(
-                    type="text"
-                    x-model="editForm.boothNumber"
-                    placeholder="e.g. Table 04, Row B"
-                    class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
-                  )
-
-              //- Target / Submission Date
-              div(class="space-y-1.5")
-                label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                  | Submission / Target Date
-                input(
-                  type="date"
-                  x-model="editForm.submissionDate"
-                  class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
-                )
-
-              //- Internal Coordinator Notes
-              div(class="space-y-1.5")
-                label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                  | Coordinator / Evaluation Notes
-                textarea(
-                  rows="3"
-                  x-model="editForm.notes"
-                  placeholder="Add comments on materials needed, battery safety check, presentation rehearsals, etc."
-                  class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
-                )
-
-              //- Modal Action Buttons
-              div(class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-2")
-                button(
-                  type="button"
-                  @click="closeEditModal()"
-                  class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
-                ) Cancel
-                button(
-                  type="submit"
-                  :disabled="isSaving"
-                  class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 text-xs font-bold transition flex items-center space-x-1.5"
-                )
-                  template(x-if="isSaving")
-                    span Saving...
-                  template(x-if="!isSaving")
-                    span Save Project Assignment
+                    template(x-if="isSaving")
+                      span Saving...
+                    template(x-if="!isSaving")
+                      span Save Changes
 
         //- Add New Project Modal
         div(
@@ -430,7 +517,6 @@ html(lang="en")
             @click.outside="closeAddModal()"
             class="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
           )
-            //- Add Modal Header
             div(class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/70")
               div(class="flex items-center space-x-2.5")
                 div(class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400")
@@ -439,7 +525,7 @@ html(lang="en")
                     line(x1="5" y1="12" x2="19" y2="12")
                 div
                   h2(class="text-base sm:text-lg font-bold text-white tracking-tight") Add New Science Project
-                  p(class="text-xs text-slate-400") Create a new model to feature on the portal
+                  p(class="text-xs text-slate-400") Create a new model for the fair
               
               button(
                 @click="closeAddModal()"
@@ -449,10 +535,8 @@ html(lang="en")
                   path(d="M18 6 6 18")
                   path(d="m6 6 12 12")
 
-            //- Add Modal Form
             form(@submit.prevent="submitAddProject()" class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs")
               
-              //- Row 1: Title & Category
               div(class="grid grid-cols-1 sm:grid-cols-3 gap-3")
                 div(class="sm:col-span-2 space-y-1.5")
                   label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
@@ -479,7 +563,6 @@ html(lang="en")
                     option(value="Chemistry") Chemistry
                     option(value="Earth & Space") Earth & Space
 
-              //- Row 2: Concept
               div(class="space-y-1.5")
                 label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
                   | Scientific Principle / Core Concept <span class="text-rose-400">*</span>
@@ -491,7 +574,6 @@ html(lang="en")
                   class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
                 )
 
-              //- Row 3: Difficulty & Build Time & Image
               div(class="grid grid-cols-1 sm:grid-cols-3 gap-3")
                 div(class="space-y-1.5")
                   label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
@@ -506,7 +588,7 @@ html(lang="en")
 
                 div(class="space-y-1.5")
                   label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                    | Estimated Build Time
+                    | Build Time
                   input(
                     type="text"
                     x-model="addForm.buildTime"
@@ -524,11 +606,10 @@ html(lang="en")
                     class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
                   )
 
-              //- Row 4: How It Works & Real World App
               div(class="grid grid-cols-1 sm:grid-cols-2 gap-3")
                 div(class="space-y-1.5")
                   label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                    | Working Mechanism (How It Works)
+                    | Working Mechanism
                   textarea(
                     rows="2"
                     x-model="addForm.howItWorks"
@@ -545,10 +626,9 @@ html(lang="en")
                     class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
                   )
 
-              //- Row 5: Required Materials
               div(class="space-y-1.5")
                 label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                  | Required Materials (separated by semicolons or new lines)
+                  | Required Materials (separated by semicolons or lines)
                 textarea(
                   rows="2"
                   x-model="addForm.materials"
@@ -556,10 +636,9 @@ html(lang="en")
                   class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
                 )
 
-              //- Row 6: Presentation Speech
               div(class="space-y-1.5")
                 label(class="block font-mono uppercase tracking-wider text-slate-300 font-semibold")
-                  | Presentation Script (Say this at the fair)
+                  | Presentation Script
                 textarea(
                   rows="2"
                   x-model="addForm.speech"
@@ -567,17 +646,16 @@ html(lang="en")
                   class="w-full px-3 py-2 bg-slate-950/90 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
                 )
 
-              //- Row 7: Initial Assignment (Optional)
               div(class="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800 space-y-3")
                 div(class="text-[11px] font-mono uppercase tracking-wider text-cyan-400 font-bold")
-                  | Initial Student Assignment (Optional)
+                  | Student Team Assignment (Optional)
                 div(class="grid grid-cols-1 sm:grid-cols-3 gap-3")
                   div(class="space-y-1")
-                    label(class="block text-[10px] font-mono uppercase text-slate-400") Student Name
+                    label(class="block text-[10px] font-mono uppercase text-slate-400") Student Names (comma-separated)
                     input(
                       type="text"
-                      x-model="addForm.assignedStudent"
-                      placeholder="e.g. Sneha Reddy"
+                      x-model="addForm.assignedStudents"
+                      placeholder="e.g. Sneha Reddy, Rohan Gupta"
                       class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white"
                     )
                   div(class="space-y-1")
@@ -585,7 +663,7 @@ html(lang="en")
                     input(
                       type="text"
                       x-model="addForm.studentRoll"
-                      placeholder="e.g. Roll 22"
+                      placeholder="e.g. Roll 22, 23"
                       class="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white"
                     )
                   div(class="space-y-1")
@@ -599,7 +677,6 @@ html(lang="en")
                       option(value="Completed") Completed
                       option(value="Exhibited") Exhibited
 
-              //- Submit Button
               div(class="pt-3 border-t border-slate-800 flex items-center justify-end space-x-2")
                 button(
                   type="button"
@@ -636,12 +713,14 @@ html(lang="en")
           statusOptions: ['All', 'Available', 'In Progress', 'Completed', 'Exhibited'],
 
           editForm: {
-            assignedStudent: '',
+            assignedStudentsText: '',
             studentRoll: '',
             status: 'Available',
+            award: 'None',
             boothNumber: '',
             submissionDate: '',
-            notes: ''
+            notes: '',
+            image: ''
           },
 
           addForm: {
@@ -655,7 +734,7 @@ html(lang="en")
             materials: '',
             speech: '',
             image: '',
-            assignedStudent: '',
+            assignedStudents: '',
             studentRoll: '',
             status: 'Available',
             boothNumber: ''
@@ -663,15 +742,25 @@ html(lang="en")
 
           filteredModels() {
             return this.models.filter(m => {
-              const statusMatch = this.selectedStatus === 'All' || m.status === this.selectedStatus;
+              // Status filter including winners only
+              let statusMatch = true;
+              if (this.selectedStatus === 'WinnersOnly') {
+                statusMatch = m.award && m.award !== 'None';
+              } else if (this.selectedStatus !== 'All') {
+                statusMatch = m.status === this.selectedStatus;
+              }
+
               const catMatch = this.selectedCategory === 'All' || m.category === this.selectedCategory;
               const q = this.searchQuery.toLowerCase().trim();
+              const studentsMatch = m.assignedStudents && m.assignedStudents.some(s => s.toLowerCase().includes(q));
               const queryMatch = !q ||
                 m.title.toLowerCase().includes(q) ||
                 m.id.toString() === q ||
+                studentsMatch ||
                 (m.assignedStudent && m.assignedStudent.toLowerCase().includes(q)) ||
                 (m.boothNumber && m.boothNumber.toLowerCase().includes(q)) ||
-                (m.studentRoll && m.studentRoll.toLowerCase().includes(q));
+                (m.studentRoll && m.studentRoll.toLowerCase().includes(q)) ||
+                (m.award && m.award.toLowerCase().includes(q));
 
               return statusMatch && catMatch && queryMatch;
             });
@@ -691,20 +780,110 @@ html(lang="en")
             return 'bg-amber-400';
           },
 
+          getAwardBadgeClass(award) {
+            if (award.includes('1st')) return 'bg-yellow-950/70 border-yellow-500/60 text-yellow-300 shadow-[0_0_12px_rgba(234,179,8,0.2)]';
+            if (award.includes('2nd')) return 'bg-slate-900 border-slate-400 text-slate-200';
+            if (award.includes('3rd')) return 'bg-amber-950/70 border-amber-600 text-amber-300';
+            return 'bg-cyan-950/70 border-cyan-500/60 text-cyan-300';
+          },
+
+          getAwardEmoji(award) {
+            if (award.includes('1st')) return '🥇 ';
+            if (award.includes('2nd')) return '🥈 ';
+            if (award.includes('3rd')) return '🥉 ';
+            if (award.includes('Innovation')) return '🌟 ';
+            return '⚙️ ';
+          },
+
           openEditModal(model) {
             this.editingModel = model;
+            const studentsList = model.assignedStudents && model.assignedStudents.length > 0 
+              ? model.assignedStudents.join(', ') 
+              : (model.assignedStudent || '');
+
             this.editForm = {
-              assignedStudent: model.assignedStudent || '',
+              assignedStudentsText: studentsList,
               studentRoll: model.studentRoll || '',
               status: model.status || 'Available',
+              award: model.award || 'None',
               boothNumber: model.boothNumber || '',
               submissionDate: model.submissionDate || '',
-              notes: model.notes || ''
+              notes: model.notes || '',
+              image: model.image || ''
             };
           },
 
           closeEditModal() {
             this.editingModel = null;
+          },
+
+          async uploadPhoto(event) {
+            const file = event.target.files[0];
+            if (!file || !this.editingModel) return;
+
+            const formData = new FormData();
+            formData.append('photo', file);
+
+            try {
+              this.showToast('Uploading project photo...');
+              const res = await fetch(`/admin/api/projects/${this.editingModel.id}/upload-image`, {
+                method: 'POST',
+                body: formData
+              });
+
+              if (!res.ok) throw new Error('Upload failed');
+              const data = await res.json();
+
+              this.editForm.image = data.imageUrl;
+              const idx = this.models.findIndex(m => m.id === data.project.id);
+              if (idx !== -1) {
+                this.models[idx] = data.project;
+              }
+              this.stats = data.stats;
+              this.showToast('Project photo uploaded and saved successfully!');
+            } catch (err) {
+              alert('Error uploading photo: ' + err.message);
+            }
+          },
+
+          async saveProjectChanges() {
+            if (!this.editingModel) return;
+            this.isSaving = true;
+
+            const payload = {
+              assignedStudents: this.editForm.assignedStudentsText,
+              studentRoll: this.editForm.studentRoll,
+              status: this.editForm.status,
+              award: this.editForm.award,
+              boothNumber: this.editForm.boothNumber,
+              submissionDate: this.editForm.submissionDate,
+              notes: this.editForm.notes,
+              image: this.editForm.image
+            };
+
+            try {
+              const res = await fetch(`/admin/api/projects/${this.editingModel.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+
+              if (!res.ok) throw new Error('Save failed');
+              const data = await res.json();
+
+              const idx = this.models.findIndex(m => m.id === data.project.id);
+              if (idx !== -1) {
+                this.models[idx] = data.project;
+              }
+              this.stats = data.stats;
+
+              this.showToast(`Updated Model #${data.project.id} (${data.project.title})`);
+              this.closeEditModal();
+            } catch (err) {
+              alert('Error saving project changes: ' + err.message);
+            } finally {
+              this.isSaving = false;
+            }
           },
 
           openAddModal() {
@@ -719,7 +898,7 @@ html(lang="en")
               materials: '',
               speech: '',
               image: '',
-              assignedStudent: '',
+              assignedStudents: '',
               studentRoll: '',
               status: 'Available',
               boothNumber: `Table ${this.models.length + 1}`
@@ -750,36 +929,6 @@ html(lang="en")
               this.closeAddModal();
             } catch (err) {
               alert('Error creating project: ' + err.message);
-            } finally {
-              this.isSaving = false;
-            }
-          },
-
-          async saveProjectChanges() {
-            if (!this.editingModel) return;
-            this.isSaving = true;
-
-            try {
-              const res = await fetch(`/admin/api/projects/${this.editingModel.id}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(this.editForm)
-              });
-
-              if (!res.ok) throw new Error('Save failed');
-              const data = await res.json();
-
-              // Update in local models list
-              const idx = this.models.findIndex(m => m.id === data.project.id);
-              if (idx !== -1) {
-                this.models[idx] = data.project;
-              }
-              this.stats = data.stats;
-
-              this.showToast(`Updated Model #${data.project.id} (${data.project.title})`);
-              this.closeEditModal();
-            } catch (err) {
-              alert('Error saving project changes: ' + err.message);
             } finally {
               this.isSaving = false;
             }
