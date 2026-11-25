@@ -11,13 +11,14 @@ function loadStateData() {
     if (fs.existsSync(stateFilePath)) {
       const raw = fs.readFileSync(stateFilePath, 'utf8');
       const parsed = JSON.parse(raw);
-      if (parsed.states || parsed.customProjects || parsed.ratings || parsed.deletedProjectIds || parsed.adminSecurity !== undefined) {
+      if (parsed.states || parsed.customProjects || parsed.ratings || parsed.deletedProjectIds || parsed.adminSecurity !== undefined || parsed.exhibitionDate !== undefined) {
         return {
           states: parsed.states || {},
           customProjects: parsed.customProjects || [],
           ratings: parsed.ratings || {},
           deletedProjectIds: parsed.deletedProjectIds || [],
-          adminSecurity: parsed.adminSecurity || null
+          adminSecurity: parsed.adminSecurity || null,
+          exhibitionDate: parsed.exhibitionDate || ''
         };
       } else {
         return {
@@ -25,14 +26,15 @@ function loadStateData() {
           customProjects: [],
           ratings: {},
           deletedProjectIds: [],
-          adminSecurity: null
+          adminSecurity: null,
+          exhibitionDate: ''
         };
       }
     }
   } catch (err) {
     console.error('Error loading projects state:', err);
   }
-  return { states: {}, customProjects: [], ratings: {}, deletedProjectIds: [], adminSecurity: null };
+  return { states: {}, customProjects: [], ratings: {}, deletedProjectIds: [], adminSecurity: null, exhibitionDate: '' };
 }
 
 function saveStateData(data) {
@@ -360,6 +362,16 @@ function deleteModel(id) {
 }
 
 function submitVote({ projectId, voterId, voterName, rating, comment }) {
+  if (!isVotingOpen()) {
+    const exDate = getExhibitionDate();
+    return {
+      success: false,
+      votingClosed: true,
+      error: exDate
+        ? `Public voting is not open yet. Voting opens on the exhibition date (${exDate}).`
+        : 'Public voting is currently disabled until the exhibition date is reached.'
+    };
+  }
   const pid = parseInt(projectId);
   if (isNaN(pid)) {
     return { success: false, error: 'Invalid project ID.' };
@@ -555,6 +567,42 @@ function getAdminSessionToken() {
   return crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('hex');
 }
 
+// -------------------------------------------------------------
+// EXHIBITION DATE & VOTING WINDOW
+// -------------------------------------------------------------
+
+function getLocalDateString(dateObj = new Date()) {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getExhibitionDate() {
+  return stateCache.exhibitionDate || '';
+}
+
+function setExhibitionDate(dateStr) {
+  const clean = dateStr ? String(dateStr).trim() : '';
+  if (clean !== '' && !/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+    return { success: false, error: 'Invalid date format. Expected YYYY-MM-DD.' };
+  }
+  stateCache.exhibitionDate = clean;
+  saveStateData(stateCache);
+  console.log(`[Exhibition] Exhibition date set to: ${clean || 'None (Voting Hidden)'}`);
+  return {
+    success: true,
+    exhibitionDate: clean,
+    isVotingOpen: isVotingOpen()
+  };
+}
+
+function isVotingOpen() {
+  const exDate = getExhibitionDate();
+  if (!exDate) return false;
+  return getLocalDateString() >= exDate;
+}
+
 module.exports = {
   getAllModels,
   getModel,
@@ -572,5 +620,9 @@ module.exports = {
   verifyAdminPassword,
   setAdminPassword,
   changeAdminPassword,
-  getAdminSessionToken
+  getAdminSessionToken,
+  getExhibitionDate,
+  setExhibitionDate,
+  isVotingOpen,
+  getLocalDateString
 };

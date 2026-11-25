@@ -77,10 +77,38 @@ html(lang="en")
 
     //- Main Mobile Voting Container
     main(class="relative z-10 max-w-lg mx-auto w-full px-4 py-5 flex-1 flex flex-col justify-center")
+
+      if !isVotingOpen
+        //- Voting Locked Before Exhibition Date
+        div(class="glass-panel rounded-3xl p-6 sm:p-8 text-center space-y-5 border border-amber-500/35 shadow-2xl")
+          div(class="w-20 h-20 mx-auto rounded-full bg-amber-500/15 border-2 border-amber-400/50 flex items-center justify-center text-4xl shadow-lg shadow-amber-500/10")
+            span 📅
+          div(class="space-y-2")
+            div(class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-mono font-bold")
+              span 🔒
+              span Voting Not Open Yet
+            h1(class="text-xl sm:text-2xl font-extrabold text-white tracking-tight")
+              | Voting Opens on Exhibition Day
+            if exhibitionDate
+              p(class="text-xs sm:text-sm text-slate-300 leading-relaxed")
+                | Public and judge voting will unlock automatically on the scheduled exhibition date: 
+                span(class="text-cyan-400 font-mono font-bold")= exhibitionDate
+                | .
+            else
+              p(class="text-xs sm:text-sm text-slate-300 leading-relaxed")
+                | Public voting is currently closed and will open on the Science Exhibition day once scheduled by the coordinator.
+          div(class="pt-2")
+            a(
+              href="/"
+              class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-bold text-xs sm:text-sm transition flex items-center justify-center space-x-2 shadow-lg shadow-cyan-500/20"
+            )
+              svg(class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5")
+                path(d="m15 18-6-6 6-6")
+              span Browse Exhibition Science Models
       
       //- 1. Success Confetti & Celebration View (Shown after voting)
       div(
-        x-show="voteSuccess"
+        x-show="isVotingOpen && voteSuccess"
         class="glass-panel rounded-3xl p-6 sm:p-8 text-center space-y-5 border border-cyan-500/40 shadow-2xl shadow-cyan-500/10 animate-pop-in"
       )
         div(class="w-20 h-20 mx-auto rounded-full bg-gradient-to-tr from-cyan-500/20 via-emerald-500/20 to-teal-500/20 border-2 border-emerald-400/80 flex items-center justify-center text-4xl shadow-lg shadow-emerald-500/20 animate-bounce")
@@ -135,7 +163,7 @@ html(lang="en")
 
       //- 2. Voting Form View (Active balloting)
       div(
-        x-show="!voteSuccess"
+        x-show="isVotingOpen && !voteSuccess"
         class="glass-panel rounded-3xl p-5 sm:p-7 space-y-5 border border-slate-800 shadow-2xl"
       )
         //- Card Header
@@ -255,10 +283,12 @@ html(lang="en")
     script.
       const serverModels = !{JSON.stringify(models)};
       const initialProjectNo = "#{projectNo}";
+      const initialIsVotingOpen = !{JSON.stringify(Boolean(isVotingOpen))};
 
       function votingApp() {
         return {
           models: serverModels,
+          isVotingOpen: initialIsVotingOpen,
           selectedProjectId: initialProjectNo ? parseInt(initialProjectNo) : (serverModels[0]?.id || 1),
           selectedModel: null,
           voterName: '',

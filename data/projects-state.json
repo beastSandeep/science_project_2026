@@ -204,5 +204,6 @@
   "customProjects": [],
   "ratings": {},
   "deletedProjectIds": [],
-  "adminSecurity": null
+  "adminSecurity": null,
+  "exhibitionDate": ""
 }

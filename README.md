@@ -22,7 +22,9 @@ Each model includes its core scientific principles, required materials, working 
 - **Modern & Minimalist Design:** Built with Tailwind CSS, dark slate aesthetic, glassmorphic cards, and custom scientific accents.
 - **Scientific Particle Animation:** Interactive HTML5 canvas with real-time atomic orbits and particle bonds that react to mouse and touch gestures.
 - **Scroll Entrance Animations:** Smooth viewport entrance animations that trigger strictly once as visitors scroll down the home page.
-- **Mobile Voting & Balloting System (`/rate` & `/rate?projectNo=<id>`):** Mobile-first voting interface where visitors and judges can cast 1-5 star ratings with mandatory voter names and feedback.
+- **Mobile Voting & Balloting System (`/rate` & `/rate?projectNo=<id>`):** Mobile-first voting interface where visitors and judges can cast 1-5 star ratings with mandatory voter names and feedback (automatically unlocked on/after the scheduled Exhibition Date).
+- **Responsive Mobile Hamburger Navigation:** Clean slide-down mobile navigation drawer on both the public portal and Admin Dashboard for effortless smartphone browsing.
+- **Exhibition Date Voting Lock:** Voting buttons, live ratings, and mobile balloting stay hidden before the exhibition date set by the coordinator.
 - **Single Vote with Modification Memory (`localStorage`):** Voters can only vote once per project, but can adjust their score at any time from their device.
 - **Confetti & Medal Celebration:** Multi-burst particle explosion celebration powered by canvas-confetti upon ballot submission.
 - **Live Voting Tallies on Admin:** Real-time polling and KPI badges showing live star averages and vote counts on the Admin Dashboard.
@@ -79,6 +81,7 @@ The portal includes an administrative management console for event coordinators 
 - **Cryptographic Security:** Master passwords are dynamically salted with cryptographically secure random bytes and hashed using `scrypt` with constant-time verification.
 
 ### Admin Features
+- **Exhibition Date & Voting Schedule Control:** Set the exhibition date in the dashboard; public voting options stay hidden automatically until that date arrives.
 - **First-Run Password Setup & Live Password Change:** Choose credentials on deployment without any hardcoded defaults; update credentials anytime.
 - **Live Voting Tallies & KPIs:** Real-time metrics showing total submitted votes and average scores across all models with 10-second polling.
 - **Delete Any Project:** Delete any project (base template or custom) from the fair with automatic disk cleanup of associated uploaded photos.

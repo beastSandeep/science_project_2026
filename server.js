@@ -121,7 +121,9 @@ app.get('/', (req, res) => {
     presentationFormula: dataManager.baseData.presentationFormula,
     evaluationCriteria: dataManager.baseData.evaluationCriteria,
     projectChecklist: dataManager.baseData.projectChecklist,
-    totalCount: models.length
+    totalCount: models.length,
+    isVotingOpen: dataManager.isVotingOpen(),
+    exhibitionDate: dataManager.getExhibitionDate()
   });
 });
 
@@ -130,6 +132,8 @@ app.get('/api/models', (req, res) => {
   res.json({
     models: dataManager.getAllModels(),
     stats: dataManager.getStats(),
+    isVotingOpen: dataManager.isVotingOpen(),
+    exhibitionDate: dataManager.getExhibitionDate(),
     presentationFormula: dataManager.baseData.presentationFormula,
     evaluationCriteria: dataManager.baseData.evaluationCriteria,
     projectChecklist: dataManager.baseData.projectChecklist
@@ -142,7 +146,9 @@ app.get('/rate', (req, res) => {
   const projectNo = req.query.projectNo || req.query.project || '';
   res.render('rate', {
     models: models,
-    projectNo: String(projectNo)
+    projectNo: String(projectNo),
+    isVotingOpen: dataManager.isVotingOpen(),
+    exhibitionDate: dataManager.getExhibitionDate()
   });
 });
 
@@ -156,7 +162,7 @@ app.post('/api/rate', (req, res) => {
   const { projectId, voterId, voterName, rating, comment } = req.body;
   const result = dataManager.submitVote({ projectId, voterId, voterName, rating, comment });
   if (!result.success) {
-    return res.status(400).json(result);
+    return res.status(result.votingClosed ? 403 : 400).json(result);
   }
   res.json(result);
 });
@@ -277,8 +283,21 @@ app.get('/admin', requireAdminAuth, (req, res) => {
   res.render('admin/dashboard', {
     models,
     stats,
-    adminUser: dataManager.getAdminUsername()
+    adminUser: dataManager.getAdminUsername(),
+    exhibitionDate: dataManager.getExhibitionDate(),
+    isVotingOpen: dataManager.isVotingOpen(),
+    todayDate: dataManager.getLocalDateString()
   });
+});
+
+// Update Exhibition Date / Voting Window API (Protected)
+app.post('/admin/api/exhibition-date', requireAdminAuth, (req, res) => {
+  const { exhibitionDate } = req.body;
+  const result = dataManager.setExhibitionDate(exhibitionDate);
+  if (!result.success) {
+    return res.status(400).json(result);
+  }
+  res.json(result);
 });
 
 // Add new project API (Protected)

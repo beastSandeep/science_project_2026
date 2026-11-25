@@ -96,12 +96,12 @@ html(lang="en")
     //- Main Layout Wrapper
     div(class="relative z-10 flex flex-col min-h-screen")
 
-      //- Minimalist Glass Navbar
-      header(class="sticky top-0 z-40 glass-panel border-b border-slate-800/80")
+      //- Minimalist Glass Navbar with Responsive Mobile Hamburger Menu
+      header(class="sticky top-0 z-40 glass-panel border-b border-slate-800/80" @click.outside="mobileMenuOpen = false")
         div(class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between")
           //- Brand & Logo
-          div(class="flex items-center space-x-3 cursor-pointer" @click="scrollToSection('hero-section')")
-            div(class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-teal-400 to-violet-500 p-[1.5px] flex items-center justify-center shadow-lg shadow-cyan-500/25")
+          div(class="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer min-w-0" @click="scrollToSection('hero-section'); mobileMenuOpen = false")
+            div(class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-teal-400 to-violet-500 p-[1.5px] flex items-center justify-center shadow-lg shadow-cyan-500/25 flex-shrink-0")
               div(class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center")
                 svg(class="w-5 h-5 text-cyan-400 animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
                   circle(cx="12" cy="12" r="3")
@@ -113,21 +113,21 @@ html(lang="en")
                   path(d="M20 12h2")
                   path(d="m6.34 17.66-1.41 1.41")
                   path(d="m19.07 4.93-1.41 1.41")
-            div
+            div(class="min-w-0")
               div(class="flex items-center space-x-2")
-                span(class="font-extrabold tracking-tight text-white text-base") SCIENCE FAIR LAB
-                span(class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold") For Everyone
-              p(class="text-[11px] text-slate-400 font-mono tracking-wide flex items-center space-x-1.5")
+                span(class="font-extrabold tracking-tight text-white text-sm sm:text-base truncate") SCIENCE FAIR LAB
+                span(class="hidden sm:inline-block text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold flex-shrink-0") For Everyone
+              p(class="text-[10px] sm:text-[11px] text-slate-400 font-mono tracking-wide flex items-center space-x-1.5 truncate")
                 span(class="text-cyan-400 font-semibold" x-text="models.length")
-                span Working Models &bull; Open STEM Exhibition
+                span Working Models &bull; STEM Fair
 
-          //- Quick Nav Links
-          nav(class="flex items-center space-x-2 sm:space-x-3")
+          //- Desktop Navigation Links
+          nav(class="hidden md:flex items-center space-x-2 lg:space-x-3")
             a(
               href="https://github.com/beastSandeep"
               target="_blank"
               rel="noopener noreferrer"
-              class="hidden sm:inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300 hover:text-white hover:border-cyan-500/40 transition"
+              class="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300 hover:text-white hover:border-cyan-500/40 transition"
             )
               span(class="text-slate-400") Owner:
               span(class="text-cyan-400 font-semibold") Sandeep Singh
@@ -138,21 +138,22 @@ html(lang="en")
               span(x-text="'Models (' + models.length + ')'")
             button(
               @click="scrollToSection('blueprint-section')"
-              class="hidden sm:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all"
             )
               span Presentation Formula
             button(
               @click="scrollToSection('rubric-section')"
-              class="hidden sm:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-all"
             )
               span Judging Rubric
-            a(
-              href="/rate"
-              class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 transition-all flex items-center space-x-1"
-              title="Vote &amp; Rate Projects on Mobile"
-            )
-              span 🗳️
-              span Vote
+            template(x-if="isVotingOpen")
+              a(
+                href="/rate"
+                class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 transition-all flex items-center space-x-1"
+                title="Vote &amp; Rate Projects on Mobile"
+              )
+                span 🗳️
+                span Vote
             a(
               href="/admin"
               class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-cyan-400 bg-slate-900 border border-slate-800 hover:border-cyan-500/40 transition-all flex items-center space-x-1"
@@ -162,6 +163,93 @@ html(lang="en")
                 rect(width="18" height="11" x="3" y="11" rx="2" ry="2")
                 path(d="M7 11V7a5 5 0 0 1 10 0v4")
               span Admin
+
+          //- Mobile Hamburger Button
+          div(class="flex md:hidden items-center space-x-2")
+            template(x-if="isVotingOpen")
+              a(
+                href="/rate"
+                class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-purple-300 bg-purple-500/15 border border-purple-500/35 flex items-center space-x-1"
+              )
+                span 🗳️
+                span Vote
+            button(
+              type="button"
+              @click="mobileMenuOpen = !mobileMenuOpen"
+              :aria-expanded="mobileMenuOpen.toString()"
+              aria-label="Toggle navigation menu"
+              class="p-2 rounded-xl bg-slate-900/90 border border-slate-700/80 text-slate-200 hover:text-cyan-400 hover:border-cyan-500/40 transition"
+            )
+              svg(x-show="!mobileMenuOpen" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round")
+                line(x1="4" y1="6" x2="20" y2="6")
+                line(x1="4" y1="12" x2="20" y2="12")
+                line(x1="4" y1="18" x2="20" y2="18")
+              svg(x-show="mobileMenuOpen" class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round")
+                path(d="M18 6 6 18")
+                path(d="m6 6 12 12")
+
+        //- Mobile Slide-Down Drawer Menu
+        div(
+          x-show="mobileMenuOpen"
+          x-transition:enter="transition ease-out duration-200"
+          x-transition:enter-start="opacity-0 -translate-y-2"
+          x-transition:enter-end="opacity-100 translate-y-0"
+          x-transition:leave="transition ease-in duration-150"
+          x-transition:leave-start="opacity-100 translate-y-0"
+          x-transition:leave-end="opacity-0 -translate-y-2"
+          class="md:hidden border-t border-slate-800/90 bg-slate-950/95 backdrop-blur-xl px-4 py-3 space-y-2 shadow-2xl"
+        )
+          button(
+            @click="scrollToSection('models-section'); mobileMenuOpen = false"
+            class="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-between"
+          )
+            span 🔬 Explore Working Models
+            span(class="font-mono px-2 py-0.5 rounded bg-slate-900 text-cyan-400 text-[11px]" x-text="models.length")
+
+          button(
+            @click="scrollToSection('blueprint-section'); mobileMenuOpen = false"
+            class="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-200 hover:bg-slate-900 border border-slate-800/80 flex items-center space-x-2.5 transition"
+          )
+            span 📋
+            span 4-Step Presentation Formula
+
+          button(
+            @click="scrollToSection('rubric-section'); mobileMenuOpen = false"
+            class="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-medium text-slate-200 hover:bg-slate-900 border border-slate-800/80 flex items-center space-x-2.5 transition"
+          )
+            span ⚖️
+            span Judging Rubric &amp; Checklist
+
+          template(x-if="isVotingOpen")
+            a(
+              href="/rate"
+              @click="mobileMenuOpen = false"
+              class="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-purple-200 bg-purple-500/15 border border-purple-500/35 flex items-center justify-between transition"
+            )
+              span(class="flex items-center space-x-2")
+                span 🗳️
+                span Vote &amp; Rate Projects
+              span(class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-900/60 text-purple-300") LIVE
+
+          div(class="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2")
+            a(
+              href="/admin"
+              @click="mobileMenuOpen = false"
+              class="flex-1 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-200 bg-slate-900 border border-slate-800 hover:border-cyan-500/40 flex items-center justify-center space-x-1.5 transition"
+            )
+              svg(class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
+                rect(width="18" height="11" x="3" y="11" rx="2" ry="2")
+                path(d="M7 11V7a5 5 0 0 1 10 0v4")
+              span Admin Portal
+
+            a(
+              href="https://github.com/beastSandeep"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex-1 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 bg-slate-900 border border-slate-800 flex items-center justify-center space-x-1 truncate"
+            )
+              span(class="text-slate-400") By:
+              span(class="text-cyan-400 font-semibold truncate") Sandeep Singh
 
       //- Hero Section
       section#hero-section(class="pt-10 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full")
@@ -379,8 +467,8 @@ html(lang="en")
                   )
                   p(class="text-xs text-slate-400 line-clamp-2 leading-relaxed" x-text="model.concept")
                   
-                  //- Live Community Rating (if rated)
-                  template(x-if="model.ratingCount > 0")
+                  //- Live Community Rating (if voting is open and rated)
+                  template(x-if="isVotingOpen && model.ratingCount > 0")
                     div(class="flex items-center space-x-1.5 text-[11px] font-mono text-amber-300 pt-0.5")
                       span ★
                       span(class="font-bold" x-text="model.averageRating")
@@ -417,12 +505,13 @@ html(lang="en")
                       circle(cx="12" cy="12" r="3")
                     span Explore Project
 
-                  a(
-                    :href="'/rate?projectNo=' + model.id"
-                    title="Vote &amp; Rate this project from mobile"
-                    class="p-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 hover:text-purple-200 border border-purple-500/30 transition flex items-center justify-center flex-shrink-0"
-                  )
-                    span 🗳️
+                  template(x-if="isVotingOpen")
+                    a(
+                      :href="'/rate?projectNo=' + model.id"
+                      title="Vote &amp; Rate this project from mobile"
+                      class="p-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/30 text-purple-300 hover:text-purple-200 border border-purple-500/30 transition flex items-center justify-center flex-shrink-0"
+                    )
+                      span 🗳️
 
                   template(x-if="model.videoUrl && model.videoUrl.trim() !== ''")
                     a(
@@ -710,25 +799,26 @@ html(lang="en")
                     polyline(points="15 3 21 3 21 9")
                     line(x1="10" y1="14" x2="21" y2="3")
 
-            //- Community Live Voting / Rating Banner
-            div(class="p-4 rounded-xl bg-purple-950/25 border border-purple-500/35 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md")
-              div(class="flex items-center space-x-3")
-                div(class="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-xl shadow-inner flex-shrink-0")
-                  span 🗳️
-                div
-                  div(class="text-xs font-bold text-white flex items-center space-x-1.5")
-                    span Science Fair Public Voting
-                    template(x-if="activeModel?.ratingCount > 0")
-                      span(class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold" x-text="'★ ' + activeModel?.averageRating + ' (' + activeModel?.ratingCount + ')'")
-                  p(class="text-[11px] text-slate-300 leading-tight") Cast your judge or visitor ballot for this science exhibit from your mobile device.
-              a(
-                :href="'/rate?projectNo=' + activeModel?.id"
-                class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs transition flex items-center justify-center space-x-2 shadow-lg shadow-purple-600/25 flex-shrink-0 self-start sm:self-auto"
-              )
-                span Rate on Mobile
-                svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5")
-                  path(d="M5 12h14")
-                  path(d="m12 5 7 7-7 7")
+            //- Community Live Voting / Rating Banner (Only shown on or after exhibition date)
+            template(x-if="isVotingOpen")
+              div(class="p-4 rounded-xl bg-purple-950/25 border border-purple-500/35 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md")
+                div(class="flex items-center space-x-3")
+                  div(class="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-xl shadow-inner flex-shrink-0")
+                    span 🗳️
+                  div
+                    div(class="text-xs font-bold text-white flex items-center space-x-1.5")
+                      span Science Fair Public Voting
+                      template(x-if="activeModel?.ratingCount > 0")
+                        span(class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold" x-text="'★ ' + activeModel?.averageRating + ' (' + activeModel?.ratingCount + ')'")
+                    p(class="text-[11px] text-slate-300 leading-tight") Cast your judge or visitor ballot for this science exhibit from your mobile device.
+                a(
+                  :href="'/rate?projectNo=' + activeModel?.id"
+                  class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs transition flex items-center justify-center space-x-2 shadow-lg shadow-purple-600/25 flex-shrink-0 self-start sm:self-auto"
+                )
+                  span Rate on Mobile
+                  svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5")
+                    path(d="M5 12h14")
+                    path(d="m12 5 7 7-7 7")
 
             //- How It Works (Working Mechanism)
             div(class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5")
@@ -827,10 +917,15 @@ html(lang="en")
     //- Embedded Server Data & Alpine Store
     script.
       const initialModels = !{JSON.stringify(models)};
+      const initialIsVotingOpen = !{JSON.stringify(Boolean(isVotingOpen))};
+      const initialExhibitionDate = !{JSON.stringify(exhibitionDate || '')};
 
       function scienceFairApp() {
         return {
           models: initialModels,
+          isVotingOpen: initialIsVotingOpen,
+          exhibitionDate: initialExhibitionDate,
+          mobileMenuOpen: false,
           searchQuery: '',
           selectedDifficulty: 'All',
           selectedCategory: 'All',
@@ -846,6 +941,12 @@ html(lang="en")
                 const data = await res.json();
                 if (data.models && Array.isArray(data.models)) {
                   this.models = data.models;
+                }
+                if (data.isVotingOpen !== undefined) {
+                  this.isVotingOpen = Boolean(data.isVotingOpen);
+                }
+                if (data.exhibitionDate !== undefined) {
+                  this.exhibitionDate = data.exhibitionDate || '';
                 }
               }
             } catch (err) {

@@ -60,12 +60,12 @@ html(lang="en")
     //- Main Layout Wrapper
     div(class="relative z-10 flex flex-col min-h-screen")
 
-      //- Sticky Admin Header
-      header(class="sticky top-0 z-40 glass-panel border-b border-slate-800")
+      //- Sticky Admin Header with Responsive Mobile Hamburger Menu
+      header(class="sticky top-0 z-40 glass-panel border-b border-slate-800" @click.outside="adminMobileMenuOpen = false")
         div(class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between")
           //- Brand & Logo
-          div(class="flex items-center space-x-3")
-            div(class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-teal-400 to-violet-500 p-[1.5px] flex items-center justify-center shadow-lg shadow-cyan-500/20")
+          div(class="flex items-center space-x-2.5 sm:space-x-3 min-w-0")
+            div(class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-teal-400 to-violet-500 p-[1.5px] flex items-center justify-center shadow-lg shadow-cyan-500/20 flex-shrink-0")
               div(class="w-full h-full bg-slate-950 rounded-[11px] flex items-center justify-center")
                 svg(class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
                   path(d="M12 2v4")
@@ -76,14 +76,14 @@ html(lang="en")
                   path(d="m16.24 16.24 2.83 2.83")
                   path(d="M18 12h4")
                   path(d="m16.24 7.76 2.83-2.83")
-            div
+            div(class="min-w-0")
               div(class="flex items-center space-x-2")
-                span(class="font-extrabold tracking-tight text-white text-sm sm:text-base") ADMIN PORTAL
-                span(class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-semibold") Team &amp; Winner Management
-              p(class="text-[11px] text-slate-400 font-mono") Science Fair 2026 &bull; Owner: Sandeep Singh
+                span(class="font-extrabold tracking-tight text-white text-sm sm:text-base truncate") ADMIN PORTAL
+                span(class="hidden lg:inline-block text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-semibold flex-shrink-0") Team &amp; Winner Management
+              p(class="text-[10px] sm:text-[11px] text-slate-400 font-mono truncate") Science Fair 2026 &bull; Owner: Sandeep Singh
 
-          //- Top Controls
-          div(class="flex items-center space-x-2 sm:space-x-3")
+          //- Desktop Top Controls
+          div(class="hidden md:flex items-center space-x-2 lg:space-x-2.5")
             button(
               @click="openAddModal()"
               class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition flex items-center space-x-1.5"
@@ -102,7 +102,7 @@ html(lang="en")
                 path(d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4")
                 polyline(points="7 10 12 15 17 10")
                 line(x1="12" y1="15" x2="12" y2="3")
-              span(class="hidden sm:inline") Export CSV
+              span Export CSV
 
             a(
               href="/rate"
@@ -111,7 +111,7 @@ html(lang="en")
               title="Open Public Voting Portal"
             )
               span 🗳️
-              span(class="hidden sm:inline") Public Voting
+              span Public Voting
 
             a(
               href="/"
@@ -122,7 +122,7 @@ html(lang="en")
                 path(d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6")
                 polyline(points="15 3 21 3 21 9")
                 line(x1="10" y1="14" x2="21" y2="3")
-              span(class="hidden sm:inline") Public Site
+              span Public Site
 
             button(
               @click="openPasswordModal()"
@@ -132,7 +132,7 @@ html(lang="en")
               svg(class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2")
                 rect(width="18" height="11" x="3" y="11" rx="2" ry="2")
                 path(d="M7 11V7a5 5 0 0 1 10 0v4")
-              span(class="hidden sm:inline") Change Password
+              span Change Password
 
             a(
               href="/admin/logout"
@@ -143,6 +143,73 @@ html(lang="en")
                 polyline(points="16 17 21 12 16 7")
                 line(x1="21" y1="12" x2="9" y2="12")
               span Logout
+
+          //- Mobile Quick Action + Hamburger Button
+          div(class="flex md:hidden items-center space-x-2")
+            button(
+              @click="openAddModal()"
+              class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 text-slate-950 font-bold text-xs flex items-center space-x-1 shadow-md"
+            )
+              svg(class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5")
+                line(x1="12" y1="5" x2="12" y2="19")
+                line(x1="5" y1="12" x2="19" y2="12")
+              span Add
+            button(
+              type="button"
+              @click="adminMobileMenuOpen = !adminMobileMenuOpen"
+              :aria-expanded="adminMobileMenuOpen.toString()"
+              aria-label="Toggle admin menu"
+              class="p-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 hover:text-cyan-400 transition"
+            )
+              svg(x-show="!adminMobileMenuOpen" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round")
+                line(x1="4" y1="6" x2="20" y2="6")
+                line(x1="4" y1="12" x2="20" y2="12")
+                line(x1="4" y1="18" x2="20" y2="18")
+              svg(x-show="adminMobileMenuOpen" class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round")
+                path(d="M18 6 6 18")
+                path(d="m6 6 12 12")
+
+        //- Mobile Admin Drawer Menu
+        div(
+          x-show="adminMobileMenuOpen"
+          x-transition
+          class="md:hidden border-t border-slate-800 bg-slate-950/95 backdrop-blur-xl px-4 py-3 space-y-2 shadow-2xl"
+        )
+          a(
+            href="/admin/api/export-csv"
+            @click="adminMobileMenuOpen = false"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 flex items-center space-x-2"
+          )
+            span 📥
+            span Export Roster CSV
+          a(
+            href="/rate"
+            target="_blank"
+            @click="adminMobileMenuOpen = false"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-xs text-purple-300 flex items-center justify-between"
+          )
+            span 🗳️ Public Voting Page
+            span(class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900" x-text="isVotingOpen ? 'OPEN' : 'LOCKED'")
+          a(
+            href="/"
+            target="_blank"
+            @click="adminMobileMenuOpen = false"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-300 flex items-center space-x-2"
+          )
+            span 🌐
+            span Open Public Exhibition Site
+          button(
+            @click="openPasswordModal(); adminMobileMenuOpen = false"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-amber-300 flex items-center space-x-2 text-left"
+          )
+            span 🔒
+            span Change Master Password
+          a(
+            href="/admin/logout"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-center space-x-2"
+          )
+            span 🚪
+            span Logout Admin Session
 
       //- Main Content Container
       main(class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1 space-y-8")
@@ -204,6 +271,56 @@ html(lang="en")
               span Live Votes
             div(class="text-2xl font-extrabold text-rose-300 font-mono" x-text="stats.totalVotes || 0")
             div(class="text-[10px] text-rose-400/80 font-mono") Public Ballots
+
+        //- Exhibition Date & Public Voting Control Bar
+        div(class="glass-panel rounded-2xl p-4 sm:p-5 border border-purple-500/30 bg-purple-950/10 flex flex-col lg:flex-row lg:items-center justify-between gap-4")
+          div(class="space-y-1")
+            div(class="flex items-center space-x-2 flex-wrap gap-y-1")
+              span(class="text-xs font-bold text-white flex items-center space-x-1.5")
+                span 📅
+                span Exhibition Date &amp; Voting Schedule
+              template(x-if="isVotingOpen")
+                span(class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 border border-emerald-500/40 text-emerald-300")
+                  | 🟢 VOTING LIVE (Since <span x-text="exhibitionDate"></span>)
+              template(x-if="!isVotingOpen && exhibitionDate")
+                span(class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 border border-amber-500/40 text-amber-300")
+                  | 🔒 HIDDEN UNTIL <span x-text="exhibitionDate"></span>
+              template(x-if="!isVotingOpen && !exhibitionDate")
+                span(class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-800 border border-slate-700 text-slate-300")
+                  | 🔒 VOTING HIDDEN (No Exhibition Date Set)
+            p(class="text-[11px] text-slate-400")
+              | Voting options on the public site &amp; mobile balloting (/rate) remain completely hidden until the exhibition date is reached.
+
+          div(class="flex flex-wrap items-center gap-2")
+            input(
+              type="date"
+              x-model="exhibitionDateInput"
+              class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-400"
+            )
+            button(
+              type="button"
+              @click="saveExhibitionDate(exhibitionDateInput)"
+              :disabled="isSavingDate"
+              class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition shadow-md"
+            )
+              span(x-text="isSavingDate ? 'Saving...' : 'Save Date'")
+            button(
+              type="button"
+              @click="saveExhibitionDate(todayDate)"
+              :disabled="isSavingDate"
+              class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/35 text-emerald-300 text-xs font-semibold transition"
+              title="Set exhibition date to today to open public voting immediately"
+            )
+              | Open Today
+            template(x-if="exhibitionDate")
+              button(
+                type="button"
+                @click="saveExhibitionDate('')"
+                :disabled="isSavingDate"
+                class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs transition"
+                title="Clear date and lock public voting"
+              )
+                | Lock / Clear
 
         //- Filter & Management Controls
         div(class="glass-panel rounded-2xl p-4 sm:p-5 border border-slate-800 space-y-4")
@@ -881,11 +998,20 @@ html(lang="en")
     script.
       const initialModels = !{JSON.stringify(models)};
       const initialStats = !{JSON.stringify(stats)};
+      const initialExhibitionDate = !{JSON.stringify(exhibitionDate || '')};
+      const initialIsVotingOpen = !{JSON.stringify(Boolean(isVotingOpen))};
+      const serverTodayDate = !{JSON.stringify(todayDate || '')};
 
       function adminDashboardApp() {
         return {
           models: initialModels,
           stats: initialStats,
+          adminMobileMenuOpen: false,
+          exhibitionDate: initialExhibitionDate,
+          exhibitionDateInput: initialExhibitionDate,
+          isVotingOpen: initialIsVotingOpen,
+          todayDate: serverTodayDate,
+          isSavingDate: false,
           searchQuery: '',
           selectedStatus: 'All',
           selectedCategory: 'All',
@@ -1242,6 +1368,36 @@ html(lang="en")
               this.passwordError = 'Network error while updating password.';
             } finally {
               this.isPasswordSaving = false;
+            }
+          },
+
+          async saveExhibitionDate(dateVal) {
+            this.isSavingDate = true;
+            try {
+              const res = await fetch('/admin/api/exhibition-date', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exhibitionDate: dateVal || '' })
+              });
+              const data = await res.json();
+              if (!res.ok || !data.success) {
+                alert(data.error || 'Failed to save exhibition date.');
+              } else {
+                this.exhibitionDate = data.exhibitionDate || '';
+                this.exhibitionDateInput = this.exhibitionDate;
+                this.isVotingOpen = Boolean(data.isVotingOpen);
+                if (!this.exhibitionDate) {
+                  this.showToast('Exhibition date cleared — Public voting is now hidden.');
+                } else if (this.isVotingOpen) {
+                  this.showToast(`Exhibition date set to ${this.exhibitionDate} — Public voting is LIVE!`);
+                } else {
+                  this.showToast(`Exhibition date scheduled for ${this.exhibitionDate} — Voting hidden until then.`);
+                }
+              }
+            } catch (err) {
+              alert('Network error saving exhibition date.');
+            } finally {
+              this.isSavingDate = false;
             }
           },
 
